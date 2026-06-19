@@ -251,6 +251,90 @@ option { color:#111; }
 .field label { display:block; font-weight:900; margin:0 0 5px; color:#fff; }
 #cssOutput { min-height:220px; font-family:ui-monospace,Consolas,monospace; font-weight:500; line-height:1.5; }
 code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px 6px; }
+
+/* OBS dock compact control view */
+body.control-view {
+  height:100vh;
+  overflow:hidden;
+  background:linear-gradient(135deg,#21133b,#3b2b66 62%,#2b1749);
+}
+body.control-view .app-wrap {
+  width:100%;
+  max-width:none;
+  height:100vh;
+  padding:8px;
+  display:grid;
+  grid-template-rows:auto auto auto minmax(82px,1fr) auto auto;
+  gap:7px;
+  overflow:hidden;
+}
+body.control-view .app-head {
+  margin:0;
+  align-items:center;
+}
+body.control-view h1 { font-size:18px; margin:0; }
+body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
+body.control-view .panel {
+  margin:0;
+  padding:8px;
+  border-radius:14px;
+}
+body.control-view .panel h2 {
+  font-size:14px;
+  margin:0 0 6px;
+}
+body.control-view button {
+  min-height:34px;
+  padding:7px 8px;
+  border-radius:10px;
+  font-size:13px;
+}
+body.control-view .role-switch {
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:6px;
+}
+body.control-view .role-switch button { line-height:1.15; }
+body.control-view .role-switch small { display:block; font-size:10px; color:rgba(255,255,255,.82); }
+body.control-view .grid3 { gap:6px; }
+body.control-view .candidate-scroll {
+  max-height:100%;
+  overflow:auto;
+  padding-right:2px;
+}
+body.control-view .candidate-card {
+  grid-template-columns:1fr 92px 58px 58px;
+  gap:5px;
+  padding:6px;
+  border-radius:12px;
+  margin:5px 0;
+}
+body.control-view .candidate-label { font-size:13px; }
+body.control-view select {
+  padding:6px 4px;
+  border-radius:9px;
+  font-size:12px;
+}
+body.control-view .direct-row {
+  grid-template-columns:56px 1fr 1fr 1fr;
+  gap:5px;
+  padding:5px;
+  border-radius:12px;
+  margin:5px 0;
+}
+body.control-view .role-title { font-size:13px; line-height:1.1; }
+body.control-view .role-title small { display:block; font-size:10px; color:rgba(255,255,255,.78); }
+body.control-view .status {
+  margin-top:6px;
+  min-height:28px;
+  padding:6px 8px;
+  font-size:12px;
+  border-radius:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body.control-view .dock-actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+
 @media (max-width: 620px) {
   .app-wrap { padding:10px; }
   .direct-row { grid-template-columns:76px 1fr; }
@@ -461,50 +545,40 @@ function candidateCardsHTML(){
   }).join('');
 }
 function renderControl(){
-  document.body.className = 'app-view';
+  document.body.className = 'app-view control-view';
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
-      <div>
-        <h1>🎮 OW勝敗カウンター操作</h1>
-        <p>半自動候補リスト対応版。OCR本体はまだなし、手動テスト候補で確認できるよ。</p>
-        <p><small>表示URLは <code>?view=overlay</code>、操作URLは <code>?view=control</code>。</small></p>
-      </div>
-      <button class="soft" onclick="OWC.openView('overlay')">表示モードを開く</button>
+      <h1>🎮 OW勝敗カウンター</h1>
+      <button class="soft" onclick="OWC.openView('overlay')">表示</button>
     </div>
     <section class="panel">
       <h2>🎯 現在ロール</h2>
       <div class="role-switch">${roleButtonsHTML()}</div>
     </section>
     <section class="panel">
-      <h2>🧪 手動テスト候補</h2>
-      <p class="muted">今選んでいるロールに、候補だけ追加するよ。カウントは確定するまで増えないよぉ。</p>
+      <h2>🧪 候補テスト</h2>
       <div class="grid3">
         <button class="win" onclick="OWC.addCandidate('win')">勝ち候補</button>
         <button class="loss" onclick="OWC.addCandidate('loss')">負け候補</button>
-        <button class="draw" onclick="OWC.addCandidate('draw')">引き分け候補</button>
+        <button class="draw" onclick="OWC.addCandidate('draw')">引き分け</button>
       </div>
     </section>
-    <section class="panel">
-      <h2>📌 未確定候補 <small>${state.candidates.length}件</small></h2>
-      <div id="candidateList">${candidateCardsHTML()}</div>
-      <div class="grid2" style="margin-top:10px">
-        <button class="soft" onclick="OWC.clearCandidates()">候補をすべて破棄</button>
-        <button class="soft" onclick="OWC.renderControl()">表示更新</button>
-      </div>
+    <section class="panel" style="min-height:0; overflow:hidden;">
+      <h2>📌 未確定候補 ${state.candidates.length}件</h2>
+      <div class="candidate-scroll" id="candidateList">${candidateCardsHTML()}</div>
     </section>
     <section class="panel">
       <h2>🕹️ 手動操作</h2>
       ${directRowsHTML()}
-      <div class="grid3" style="margin-top:10px">
-        <button class="soft" onclick="OWC.undo()">1つ戻す</button>
-        <button class="soft" onclick="OWC.copyState()">JSONコピー</button>
-        <button class="danger" onclick="OWC.resetAll()">全リセット</button>
-      </div>
-      <div class="status" id="status">${statusText}</div>
     </section>
     <section class="panel">
-      <h2>🔌 OCR連携用メモ</h2>
-      <p class="muted">将来のOCR補助アプリは、ランク進行度画面の「勝利！ / 敗北 / 引き分け」を検出して、この候補リストに送る想定。今は手動テスト候補だけ有効だよ。</p>
+      <div class="dock-actions">
+        <button class="soft" onclick="OWC.undo()">戻す</button>
+        <button class="soft" onclick="OWC.clearCandidates()">候補破棄</button>
+        <button class="soft" onclick="OWC.copyState()">JSON</button>
+        <button class="danger" onclick="OWC.resetAll()">リセット</button>
+      </div>
+      <div class="status" id="status">${statusText}</div>
     </section>
   </div>`;
 }
