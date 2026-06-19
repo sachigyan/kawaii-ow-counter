@@ -372,6 +372,7 @@ function defaultState(){
     history:[],
     candidates:[],
     nextCandidateId:1,
+    ocrSeen:[],
     updatedAt:Date.now()
   };
 }
@@ -384,6 +385,7 @@ function mergeState(raw){
   merged.history = Array.isArray(parsed.history) ? parsed.history : [];
   merged.candidates = Array.isArray(parsed.candidates) ? parsed.candidates : [];
   merged.nextCandidateId = Number(parsed.nextCandidateId || (merged.candidates.reduce((m,c)=>Math.max(m, Number(c.id)||0),0)+1) || 1);
+  merged.ocrSeen = Array.isArray(parsed.ocrSeen) ? parsed.ocrSeen.slice(-500) : [];
   if(!roles.some(r=>r.id===merged.activeRole)) merged.activeRole = 'support';
   return merged;
 }
@@ -435,10 +437,12 @@ function resetAll(){
   saveState();
 }
 
-function addCandidate(result, roleId=state.activeRole, source='manual-test'){
+function addCandidate(result, roleId=state.activeRole, source='manual-test', externalId=null){
   result = safeResult(result); roleId = safeRole(roleId);
-  const candidate = {id:state.nextCandidateId++, roleId, result, source, createdAt:Date.now()};
+  if(externalId && state.ocrSeen.includes(String(externalId))) return;
+  const candidate = {id:state.nextCandidateId++, externalId:externalId ? String(externalId) : null, roleId, result, source, createdAt:Date.now()};
   state.candidates.push(candidate);
+  if(externalId) state.ocrSeen = [...state.ocrSeen, String(externalId)].slice(-500);
   state.activeRole = roleId;
   setStatus(`${roleLabel(roleId)}の${resultLabels[result].candidate}を候補リストに追加したよ。`);
   saveState();
@@ -636,11 +640,28 @@ async function copyState(){
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
 window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, undo, resetAll, setActiveRole, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss };
-window.addOwCandidate = function(result, roleId, source){ addCandidate(result, roleId || state.activeRole, source || 'external'); };
+window.addOwCandidate = function(result, roleId, source, externalId){ addCandidate(result, roleId || state.activeRole, source || 'external', externalId || null); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
-  if(d.type === 'owc-candidate') addCandidate(d.result, d.roleId || state.activeRole, d.source || 'postMessage');
+  if(d.type === 'owc-candidate') addCandidate(d.result, d.roleId || state.activeRole, d.source || 'postMessage', d.externalId || null);
 });
+
+let ocrOfflineNotified = false;
+async function pollOcrHelper(){
+  if(getView() !== 'control') return;
+  try {
+    const res = await fetch('http://127.0.0.1:17656/candidates', {cache:'no-store'});
+    if(!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data.candidates) ? data.candidates : [];
+    list.forEach(c => addCandidate(c.result, c.roleId || state.activeRole, c.source || 'ocr', c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`));
+    if(list.length && ocrOfflineNotified) ocrOfflineNotified = false;
+  } catch(e) {
+    ocrOfflineNotified = true;
+  }
+}
+setInterval(pollOcrHelper, 1500);
+
 if(channel){
   channel.onmessage = ev => {
     if(ev.data && ev.data.type === 'state') { state = mergeState(ev.data.state); localStorage.setItem(STORAGE_STATE, JSON.stringify(state)); renderAll(); }
