@@ -271,17 +271,22 @@ body.control-view .app-wrap {
 body.control-view .app-head {
   margin:0;
   align-items:center;
+  justify-content:center;
+  text-align:center;
+  position:relative;
 }
 body.control-view h1 {
-  font-size:20px;
-  margin:0;
-  letter-spacing:.08em;
+  font-size:21px;
+  margin:0 auto;
+  letter-spacing:.10em;
   color:#050509;
   -webkit-text-stroke:1.2px #ffffff;
   text-shadow:
-    0 0 8px rgba(185,103,255,.85),
-    0 0 14px rgba(58,210,238,.55);
+    0 0 7px rgba(255,255,255,.9),
+    0 0 12px rgba(185,103,255,.95),
+    0 0 20px rgba(58,210,238,.70);
   font-family:"Arial Black","Segoe UI Black","Yu Gothic UI",sans-serif;
+  text-align:center;
 }
 body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
 body.control-view .panel {
@@ -297,10 +302,43 @@ body.control-view .panel h2 {
   margin:0 0 6px;
 }
 body.control-view button {
-  min-height:34px;
-  padding:7px 8px;
-  border-radius:10px;
+  min-height:36px;
+  padding:8px 9px;
+  border-radius:11px;
   font-size:13px;
+  color:#fff;
+  background:linear-gradient(135deg,#7c3aed,#06b6d4);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:
+    0 0 10px rgba(124,58,237,.45),
+    inset 0 1px 0 rgba(255,255,255,.22);
+  text-shadow:0 0 6px rgba(255,255,255,.55);
+}
+body.control-view button.win {
+  background:linear-gradient(135deg,#12d7ff,#5b7cff);
+  color:#06111f;
+  box-shadow:0 0 12px rgba(58,210,238,.70), inset 0 1px 0 rgba(255,255,255,.45);
+}
+body.control-view button.loss {
+  background:linear-gradient(135deg,#ff3ea5,#b967ff);
+  color:#fff;
+  box-shadow:0 0 12px rgba(245,76,167,.75), inset 0 1px 0 rgba(255,255,255,.30);
+}
+body.control-view button.draw {
+  background:linear-gradient(135deg,#c7d2fe,#64748b);
+  color:#101018;
+  box-shadow:0 0 10px rgba(199,210,254,.55), inset 0 1px 0 rgba(255,255,255,.50);
+}
+body.control-view button.soft {
+  background:linear-gradient(135deg,#17172a,#2a2444);
+  color:#ffffff;
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 0 10px rgba(185,103,255,.35), inset 0 1px 0 rgba(255,255,255,.12);
+}
+body.control-view button.danger {
+  background:linear-gradient(135deg,#ff3ea5,#7c3aed);
+  color:#fff;
+  box-shadow:0 0 14px rgba(255,62,165,.65), inset 0 1px 0 rgba(255,255,255,.25);
 }
 body.control-view .role-switch {
   grid-template-columns:repeat(3, minmax(0,1fr));
@@ -328,14 +366,24 @@ body.control-view select {
   font-size:12px;
 }
 body.control-view .direct-row {
-  grid-template-columns:56px 1fr 1fr 1fr;
-  gap:5px;
-  padding:5px;
-  border-radius:12px;
-  margin:5px 0;
+  grid-template-columns:74px 1fr 1fr 1fr;
+  gap:6px;
+  padding:6px;
+  border-radius:13px;
+  margin:6px 0;
 }
-body.control-view .role-title { font-size:13px; line-height:1.1; }
-body.control-view .role-title small { display:block; font-size:10px; color:rgba(255,255,255,.78); }
+body.control-view .role-title {
+  font-size:16px;
+  line-height:1.05;
+  letter-spacing:.01em;
+  text-shadow:0 0 8px rgba(185,103,255,.85);
+}
+body.control-view .role-title small {
+  display:block;
+  font-size:12px;
+  color:rgba(255,255,255,.86);
+  margin-top:2px;
+}
 body.control-view .status {
   margin-top:6px;
   min-height:28px;
@@ -346,7 +394,7 @@ body.control-view .status {
   overflow:hidden;
   text-overflow:ellipsis;
 }
-body.control-view .dock-actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:6px; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
 body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.66); }
@@ -584,7 +632,6 @@ function renderControl(){
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
-      <button class="soft" onclick="OWC.openView('overlay')">表示</button>
     </div>
     <section class="panel auto-panel">
       <h2><span>🤖 自動カウント</span><span>📌 未確定候補 ${state.candidates.length}件</span></h2>
@@ -597,10 +644,9 @@ function renderControl(){
     </section>
     <section class="panel">
       <div class="dock-actions">
-        <button class="soft" onclick="OWC.undo()">戻す</button>
-        <button class="soft" onclick="OWC.clearCandidates()">候補破棄</button>
-        <button class="soft" onclick="OWC.copyState()">JSON</button>
-        <button class="danger" onclick="OWC.resetAll()">リセット</button>
+        <button class="soft" onclick="OWC.undo()">1つ戻す</button>
+        <button class="soft" onclick="OWC.openSettings()">設定</button>
+        <button class="danger" onclick="OWC.resetAll()">すべてリセット</button>
       </div>
       <div class="status" id="status">${statusText}</div>
     </section>
@@ -657,9 +703,17 @@ async function copyState(){
   try { await navigator.clipboard.writeText(JSON.stringify(state, null, 2)); setStatus('JSONをコピーしたよ。'); }
   catch(e){ setStatus('JSONコピーに失敗したかも。'); }
 }
+function openSettings(){
+  try {
+    const w = window.open(HELPER_BASE, '_blank');
+    if(!w) location.href = HELPER_BASE;
+  } catch(e) {
+    location.href = HELPER_BASE;
+  }
+}
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, undo, resetAll, setActiveRole, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, undo, resetAll, setActiveRole, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
 window.addOwCandidate = function(result, roleId, source, externalId){ addCandidate(result, roleId || state.activeRole, source || 'external', externalId || null); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
