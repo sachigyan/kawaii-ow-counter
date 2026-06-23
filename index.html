@@ -256,28 +256,41 @@ code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px
 body.control-view {
   height:100vh;
   overflow:hidden;
-  background:linear-gradient(135deg,#21133b,#3b2b66 62%,#2b1749);
+  background:#050509;
 }
 body.control-view .app-wrap {
   width:100%;
   max-width:none;
   height:100vh;
-  padding:8px;
+  padding:9px;
   display:grid;
-  grid-template-rows:auto auto auto minmax(82px,1fr) auto auto;
-  gap:7px;
+  grid-template-rows:auto minmax(92px,1fr) auto auto;
+  gap:8px;
   overflow:hidden;
 }
 body.control-view .app-head {
   margin:0;
   align-items:center;
 }
-body.control-view h1 { font-size:18px; margin:0; }
+body.control-view h1 {
+  font-size:20px;
+  margin:0;
+  letter-spacing:.08em;
+  color:#050509;
+  -webkit-text-stroke:1.2px #ffffff;
+  text-shadow:
+    0 0 8px rgba(185,103,255,.85),
+    0 0 14px rgba(58,210,238,.55);
+  font-family:"Arial Black","Segoe UI Black","Yu Gothic UI",sans-serif;
+}
 body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
 body.control-view .panel {
   margin:0;
-  padding:8px;
-  border-radius:14px;
+  padding:9px;
+  border-radius:15px;
+  background:#101018;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:none;
 }
 body.control-view .panel h2 {
   font-size:14px;
@@ -334,6 +347,12 @@ body.control-view .status {
   text-overflow:ellipsis;
 }
 body.control-view .dock-actions { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+body.control-view .auto-panel { min-height:0; overflow:hidden; }
+body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; }
+body.control-view .candidate-empty { margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.66); }
+body.control-view .helper-mini-status { font-size:11px; color:rgba(255,255,255,.62); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.control-view .manual-panel { overflow:auto; }
+
 
 @media (max-width: 620px) {
   .app-wrap { padding:10px; }
@@ -350,6 +369,7 @@ body.control-view .dock-actions { display:grid; grid-template-columns:repeat(4,m
 'use strict';
 const STORAGE_STATE = 'sachigyan_ow_counter_static_state_v1';
 const CHANNEL_NAME = 'sachigyan_ow_counter_static_channel_v1';
+const HELPER_BASE = 'http://127.0.0.1:17656';
 const roles = [
   {id:'tank', short:'Tank', label:'タンク'},
   {id:'damage', short:'Dps', label:'DPS'},
@@ -519,9 +539,20 @@ function openView(view){
   const base = `${location.pathname}?view=${view}`;
   location.href = base;
 }
+async function loadOverlayCustomCss(){
+  try {
+    const res = await fetch(`${HELPER_BASE}/overlay-css`, {cache:'no-store'});
+    if(!res.ok) return;
+    const css = await res.text();
+    let tag = document.getElementById('owcLocalOverlayCss');
+    if(!tag){ tag = document.createElement('style'); tag.id = 'owcLocalOverlayCss'; document.head.appendChild(tag); }
+    tag.textContent = css;
+  } catch(e) {}
+}
 function renderOverlay(){
   document.body.className = 'overlay-view';
   document.body.innerHTML = `<div class="owc-stage"><div class="owc-role-list" id="counter">${counterHTML()}</div></div>`;
+  loadOverlayCustomCss();
 }
 function roleButtonsHTML(){
   return roles.map(r => `<button class="soft ${state.activeRole===r.id?'active':''}" onclick="OWC.setActiveRole('${r.id}')">${r.short}<br><small>${r.label}</small></button>`).join('');
@@ -535,7 +566,7 @@ function directRowsHTML(){
   </div>`).join('');
 }
 function candidateCardsHTML(){
-  if(!state.candidates.length) return `<p class="muted">未確定候補はまだないよ。手動テスト候補ボタンで動作確認できるよぉ。</p>`;
+  if(!state.candidates.length) return `<p class="muted">未確定候補はまだないよ。</p>`;
   return state.candidates.map(c => {
     const info = resultLabels[c.result] || resultLabels.win;
     const time = new Date(c.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -552,27 +583,16 @@ function renderControl(){
   document.body.className = 'app-view control-view';
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
-      <h1>🎮 OW勝敗カウンター</h1>
+      <h1>KAWAII OW COUNTER</h1>
       <button class="soft" onclick="OWC.openView('overlay')">表示</button>
     </div>
-    <section class="panel">
-      <h2>🎯 現在ロール</h2>
-      <div class="role-switch">${roleButtonsHTML()}</div>
-    </section>
-    <section class="panel">
-      <h2>🧪 候補テスト</h2>
-      <div class="grid3">
-        <button class="win" onclick="OWC.addCandidate('win')">勝ち候補</button>
-        <button class="loss" onclick="OWC.addCandidate('loss')">負け候補</button>
-        <button class="draw" onclick="OWC.addCandidate('draw')">引き分け</button>
-      </div>
-    </section>
-    <section class="panel" style="min-height:0; overflow:hidden;">
-      <h2>📌 未確定候補 ${state.candidates.length}件</h2>
+    <section class="panel auto-panel">
+      <h2><span>🤖 自動カウント</span><span>📌 未確定候補 ${state.candidates.length}件</span></h2>
+      <div class="helper-mini-status" id="helperMiniStatus">helper: checking...</div>
       <div class="candidate-scroll" id="candidateList">${candidateCardsHTML()}</div>
     </section>
-    <section class="panel">
-      <h2>🕹️ 手動操作</h2>
+    <section class="panel manual-panel">
+      <h2>🕹️ 手動カウント</h2>
       ${directRowsHTML()}
     </section>
     <section class="panel">
@@ -650,14 +670,18 @@ let ocrOfflineNotified = false;
 async function pollOcrHelper(){
   if(getView() !== 'control') return;
   try {
-    const res = await fetch('http://127.0.0.1:17656/candidates', {cache:'no-store'});
+    const res = await fetch(`${HELPER_BASE}/candidates`, {cache:'no-store'});
     if(!res.ok) return;
     const data = await res.json();
     const list = Array.isArray(data.candidates) ? data.candidates : [];
     list.forEach(c => addCandidate(c.result, c.roleId || state.activeRole, c.source || 'ocr', c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`));
+    const mini = document.getElementById('helperMiniStatus');
+    if(mini) mini.textContent = `helper: ${data.status || 'ok'} / scans ${data.scan_count || 0}${data.error ? ' / error: ' + data.error : ''}`;
     if(list.length && ocrOfflineNotified) ocrOfflineNotified = false;
   } catch(e) {
     ocrOfflineNotified = true;
+    const mini = document.getElementById('helperMiniStatus');
+    if(mini) mini.textContent = 'helper: offline';
   }
 }
 setInterval(pollOcrHelper, 1500);
