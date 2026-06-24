@@ -302,43 +302,39 @@ body.control-view .panel h2 {
   margin:0 0 6px;
 }
 body.control-view button {
-  min-height:36px;
+  min-height:38px;
+  height:38px;
   padding:8px 9px;
   border-radius:11px;
   font-size:13px;
   color:#fff;
-  background:linear-gradient(135deg,#7c3aed,#06b6d4);
+  background:#24243a;
   border:1px solid rgba(255,255,255,.22);
-  box-shadow:
-    0 0 10px rgba(124,58,237,.45),
-    inset 0 1px 0 rgba(255,255,255,.22);
-  text-shadow:0 0 6px rgba(255,255,255,.55);
+  box-shadow:none;
+  text-shadow:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  line-height:1.15;
 }
 body.control-view button.win {
-  background:linear-gradient(135deg,#12d7ff,#5b7cff);
+  background:#3ad2ee;
   color:#06111f;
-  box-shadow:0 0 12px rgba(58,210,238,.70), inset 0 1px 0 rgba(255,255,255,.45);
 }
 body.control-view button.loss {
-  background:linear-gradient(135deg,#ff3ea5,#b967ff);
-  color:#fff;
-  box-shadow:0 0 12px rgba(245,76,167,.75), inset 0 1px 0 rgba(255,255,255,.30);
+  background:#f54ca7;
+  color:#101018;
 }
 body.control-view button.draw {
-  background:linear-gradient(135deg,#c7d2fe,#64748b);
+  background:#b8bec8;
   color:#101018;
-  box-shadow:0 0 10px rgba(199,210,254,.55), inset 0 1px 0 rgba(255,255,255,.50);
 }
-body.control-view button.soft {
-  background:linear-gradient(135deg,#17172a,#2a2444);
+body.control-view button.soft,
+body.control-view button.danger {
+  background:#24243a;
   color:#ffffff;
   border:1px solid rgba(255,255,255,.22);
-  box-shadow:0 0 10px rgba(185,103,255,.35), inset 0 1px 0 rgba(255,255,255,.12);
-}
-body.control-view button.danger {
-  background:linear-gradient(135deg,#ff3ea5,#7c3aed);
-  color:#fff;
-  box-shadow:0 0 14px rgba(255,62,165,.65), inset 0 1px 0 rgba(255,255,255,.25);
 }
 body.control-view .role-switch {
   grid-template-columns:repeat(3, minmax(0,1fr));
@@ -372,6 +368,10 @@ body.control-view .direct-row {
   border-radius:13px;
   margin:6px 0;
 }
+body.control-view .direct-row button {
+  height:42px;
+  min-height:42px;
+}
 body.control-view .role-title {
   font-size:16px;
   line-height:1.05;
@@ -396,11 +396,11 @@ body.control-view .status {
 }
 body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:6px; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
-body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; }
+body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:8px; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.66); }
 body.control-view .helper-mini-status { font-size:11px; color:rgba(255,255,255,.62); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-body.control-view .auto-toggle { min-width:86px; min-height:32px; padding:6px 10px; font-size:12px; }
+body.control-view .auto-toggle { min-width:158px; min-height:32px; height:32px; padding:6px 8px; font-size:11px; white-space:normal; }
 body.control-view .auto-history-title { font-size:12px; color:rgba(255,255,255,.72); margin:2px 0 5px; font-weight:900; }
 body.control-view .auto-log-card {
   display:grid;
@@ -449,7 +449,7 @@ const roles = [
 const resultLabels = {
   win: {short:'勝ち', candidate:'勝ち候補', cls:'win'},
   loss: {short:'負け', candidate:'負け候補', cls:'loss'},
-  draw: {short:'引き分け', candidate:'引き分け候補', cls:'draw'}
+  draw: {short:'ドロー', candidate:'ドロー候補', cls:'draw'}
 };
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 let state = loadState();
@@ -604,7 +604,7 @@ function clearCandidates(){
 }
 function toggleAutoEnabled(){
   state.autoEnabled = state.autoEnabled === false;
-  setStatus(state.autoEnabled ? '自動カウントをONにしたよ。' : '自動カウントをOFFにしたよ。');
+  setStatus(state.autoEnabled ? '自動読み取りをONにしたよ。' : '自動読み取りをOFFにしたよ。');
   saveState();
 }
 function autoRecordFromExternal(c){
@@ -692,7 +692,7 @@ function directRowsHTML(){
     <div class="role-title">${r.short}<br><small>${r.label}</small></div>
     <button class="win" onclick="OWC.directRecord('${r.id}','win')">+ 勝ち</button>
     <button class="loss" onclick="OWC.directRecord('${r.id}','loss')">+ 負け</button>
-    <button class="draw" onclick="OWC.directRecord('${r.id}','draw')">+ 引き分け</button>
+    <button class="draw" onclick="OWC.directRecord('${r.id}','draw')">+ ドロー</button>
     <button class="role-reset" onclick="OWC.resetRole('${r.id}')">リセット</button>
   </div>`).join('');
 }
@@ -715,7 +715,7 @@ function renderControl(){
       <h1>KAWAII OW COUNTER</h1>
     </div>
     <section class="panel auto-panel">
-      <h2><span>🤖 自動カウント</span><button class="auto-toggle ${autoOn ? 'danger' : 'soft'}" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動OFF' : '自動ON'}</button></h2>
+      <h2><span>${autoOn ? '🤖 自動カウント中' : '🤖 自動カウント停止中'}</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
       <div class="helper-mini-status" id="helperMiniStatus">helper: checking... / auto: ${autoOn ? 'ON' : 'OFF'}</div>
       <div class="auto-history-title">自動カウント履歴</div>
       <div class="candidate-scroll" id="autoLogList">${autoLogCardsHTML()}</div>
@@ -728,7 +728,7 @@ function renderControl(){
       <div class="dock-actions">
         <button class="soft" onclick="OWC.undo()">1つ戻す</button>
         <button class="soft" onclick="OWC.openSettings()">設定</button>
-        <button class="danger" onclick="OWC.resetAll()">すべてリセット</button>
+        <button class="soft" onclick="OWC.resetAll()">すべてリセット</button>
       </div>
       <div class="status" id="status">${statusText}</div>
     </section>
