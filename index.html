@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OW勝敗カウンター 半自動候補版</title>
+<title>KAWAII OW COUNTER 自動カウント版</title>
 <style>
 :root {
   --owc-role-color: #b967ff;
@@ -195,7 +195,7 @@ button:disabled { opacity:.55; cursor:not-allowed; transform:none; }
 .role-switch button.active { outline:2px solid #fff; box-shadow:0 0 0 4px rgba(255,255,255,.12); }
 .direct-row, .candidate-row {
   display:grid;
-  grid-template-columns:100px 1fr 1fr 1fr;
+  grid-template-columns:100px 1fr 1fr 1fr 1fr;
   gap:8px;
   align-items:center;
   padding:8px;
@@ -366,7 +366,7 @@ body.control-view select {
   font-size:12px;
 }
 body.control-view .direct-row {
-  grid-template-columns:74px 1fr 1fr 1fr;
+  grid-template-columns:74px 1fr 1fr 1fr 1fr;
   gap:6px;
   padding:6px;
   border-radius:13px;
@@ -399,6 +399,29 @@ body.control-view .auto-panel { min-height:0; overflow:hidden; }
 body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.66); }
 body.control-view .helper-mini-status { font-size:11px; color:rgba(255,255,255,.62); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+body.control-view .auto-toggle { min-width:86px; min-height:32px; padding:6px 10px; font-size:12px; }
+body.control-view .auto-history-title { font-size:12px; color:rgba(255,255,255,.72); margin:2px 0 5px; font-weight:900; }
+body.control-view .auto-log-card {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:3px;
+  padding:7px 8px;
+  border-radius:12px;
+  margin:5px 0;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+}
+body.control-view .auto-log-card b { font-size:13px; }
+body.control-view .auto-log-card small { display:block; font-size:10px; color:rgba(255,255,255,.62); }
+body.control-view .auto-log-card .win { color:#52e7ff; }
+body.control-view .auto-log-card .loss { color:#ff65bd; }
+body.control-view .auto-log-card .draw { color:#d8ddff; }
+body.control-view .direct-row button.role-reset {
+  background:linear-gradient(135deg,#241b35,#58406f);
+  color:#fff;
+  box-shadow:0 0 10px rgba(185,103,255,.28), inset 0 1px 0 rgba(255,255,255,.12);
+}
 body.control-view .manual-panel { overflow:auto; }
 
 
@@ -430,7 +453,7 @@ const resultLabels = {
 };
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 let state = loadState();
-let statusText = '準備OK。OCR本体なしの候補テスト版だよぉ。';
+let statusText = '準備OK。自動カウントONで待機中だよ。';
 
 function defaultRoleStats(){ return {wins:0,losses:0,draws:0,streak:0}; }
 function defaultState(){
@@ -439,6 +462,8 @@ function defaultState(){
     roles:{tank:defaultRoleStats(), damage:defaultRoleStats(), support:defaultRoleStats()},
     history:[],
     candidates:[],
+    autoEnabled:true,
+    autoLog:[],
     nextCandidateId:1,
     ocrSeen:[],
     updatedAt:Date.now()
@@ -452,6 +477,8 @@ function mergeState(raw){
   roles.forEach(r => { merged.roles[r.id] = {...defaultRoleStats(), ...(merged.roles[r.id] || {})}; });
   merged.history = Array.isArray(parsed.history) ? parsed.history : [];
   merged.candidates = Array.isArray(parsed.candidates) ? parsed.candidates : [];
+  merged.autoEnabled = parsed.autoEnabled !== false;
+  merged.autoLog = Array.isArray(parsed.autoLog) ? parsed.autoLog.slice(0, 60) : [];
   merged.nextCandidateId = Number(parsed.nextCandidateId || (merged.candidates.reduce((m,c)=>Math.max(m, Number(c.id)||0),0)+1) || 1);
   merged.ocrSeen = Array.isArray(parsed.ocrSeen) ? parsed.ocrSeen.slice(-500) : [];
   if(!roles.some(r=>r.id===merged.activeRole)) merged.activeRole = 'support';
@@ -481,26 +508,51 @@ function record(roleId, result, meta={}){
   if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
   if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
   if(result === 'draw') { r.draws++; r.streak = 0; }
-  state.history.push({type:'record', roleId, result, before, meta, at:Date.now()});
+  const entry = {type:'record', roleId, result, before, meta, at:Date.now()};
+  state.history.push(entry);
   state.history = state.history.slice(-300);
+  return entry;
 }
 function directRecord(roleId, result){
   record(roleId, result, {source:'direct'});
   setStatus(`${roleLabel(roleId)}に${resultLabels[result].short}を追加したよぉ。`);
   saveState();
 }
+function resetRole(roleId){
+  roleId = safeRole(roleId);
+  if(!confirm(`${roleLabel(roleId)}だけリセットする？`)) return;
+  const before = {...state.roles[roleId]};
+  state.roles[roleId] = defaultRoleStats();
+  state.history.push({type:'role-reset', roleId, before, at:Date.now()});
+  state.history = state.history.slice(-300);
+  setStatus(`${roleLabel(roleId)}だけリセットしたよ。`);
+  saveState();
+}
 function undo(){
   const last = state.history.pop();
-  if(!last || last.type !== 'record') { setStatus('戻せる履歴がないよぉ。'); saveState(); return; }
-  if(last.before && state.roles[last.roleId]) state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
-  setStatus('直前のカウントを1つ戻したよ。');
+  if(!last) { setStatus('戻せる履歴がないよぉ。'); saveState(); return; }
+  if(last.type === 'record' && last.before && state.roles[last.roleId]) {
+    state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
+    setStatus('直前のカウントを1つ戻したよ。');
+    saveState();
+    return;
+  }
+  if(last.type === 'role-reset' && last.before && state.roles[last.roleId]) {
+    state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
+    setStatus(`${roleLabel(last.roleId)}のリセットを戻したよ。`);
+    saveState();
+    return;
+  }
+  setStatus('戻せる履歴がないよぉ。');
   saveState();
 }
 function resetAll(){
-  if(!confirm('カウントと候補を全部リセットする？')) return;
+  if(!confirm('カウントと自動カウント履歴を全部リセットする？')) return;
   const active = state.activeRole;
+  const autoEnabled = state.autoEnabled !== false;
   state = defaultState();
   state.activeRole = active;
+  state.autoEnabled = autoEnabled;
   setStatus('全部リセットしたよ。');
   saveState();
 }
@@ -548,6 +600,36 @@ function clearCandidates(){
   if(!confirm('未確定候補をすべて破棄する？')) return;
   state.candidates = [];
   setStatus('未確定候補をすべて破棄したよ。');
+  saveState();
+}
+function toggleAutoEnabled(){
+  state.autoEnabled = state.autoEnabled === false;
+  setStatus(state.autoEnabled ? '自動カウントをONにしたよ。' : '自動カウントをOFFにしたよ。');
+  saveState();
+}
+function autoRecordFromExternal(c){
+  const externalId = String(c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`);
+  if(state.ocrSeen.includes(externalId)) return;
+  state.ocrSeen = [...state.ocrSeen, externalId].slice(-500);
+  if(state.autoEnabled === false) {
+    setStatus('自動OFF中なので検出結果は加算しなかったよ。');
+    saveState();
+    return;
+  }
+  const result = safeResult(c.result);
+  const roleId = safeRole(c.roleId || state.activeRole);
+  record(roleId, result, {source:'auto', externalId, candidateSource:c.source || 'helper', text:c.text || ''});
+  const info = resultLabels[result] || resultLabels.win;
+  state.autoLog = [{
+    id:`auto-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    roleId,
+    result,
+    source:c.source || 'helper',
+    externalId,
+    text:c.text || '',
+    createdAt:Date.now()
+  }, ...(state.autoLog || [])].slice(0, 40);
+  setStatus(`${roleShort(roleId)}に${info.short}を自動カウントしたよ。`);
   saveState();
 }
 function setActiveRole(roleId){
@@ -611,32 +693,32 @@ function directRowsHTML(){
     <button class="win" onclick="OWC.directRecord('${r.id}','win')">+ 勝ち</button>
     <button class="loss" onclick="OWC.directRecord('${r.id}','loss')">+ 負け</button>
     <button class="draw" onclick="OWC.directRecord('${r.id}','draw')">+ 引き分け</button>
+    <button class="role-reset" onclick="OWC.resetRole('${r.id}')">リセット</button>
   </div>`).join('');
 }
-function candidateCardsHTML(){
-  if(!state.candidates.length) return `<p class="muted">未確定候補はまだないよ。</p>`;
-  return state.candidates.map(c => {
-    const info = resultLabels[c.result] || resultLabels.win;
-    const time = new Date(c.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    const selects = `<select onchange="OWC.changeCandidateRole(${Number(c.id)}, this.value)">${roles.map(r => `<option value="${r.id}" ${c.roleId===r.id?'selected':''}>${r.short} / ${r.label}</option>`).join('')}</select>`;
-    return `<div class="candidate-card">
-      <div><div class="candidate-label ${info.cls}">#${Number(c.id)} ${info.candidate}</div><small>${time} / ${c.source || 'manual'}</small></div>
-      ${selects}
-      <button class="confirm" onclick="OWC.confirmCandidate(${Number(c.id)})">確定</button>
-      <button class="soft" onclick="OWC.discardCandidate(${Number(c.id)})">破棄</button>
+function autoLogCardsHTML(){
+  const log = Array.isArray(state.autoLog) ? state.autoLog : [];
+  if(!log.length) return `<p class="candidate-empty">まだ自動カウント履歴はないよ。</p>`;
+  return log.slice(0, 20).map((item, idx) => {
+    const info = resultLabels[item.result] || resultLabels.win;
+    const time = new Date(item.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    return `<div class="auto-log-card">
+      <div><b class="${info.cls}">${roleShort(item.roleId)} / ${info.short}</b><small>${time} / 自動加算${idx===0?' / 最新':''}</small></div>
     </div>`;
   }).join('');
 }
 function renderControl(){
+  const autoOn = state.autoEnabled !== false;
   document.body.className = 'app-view control-view';
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
     </div>
     <section class="panel auto-panel">
-      <h2><span>🤖 自動カウント</span><span>📌 未確定候補 ${state.candidates.length}件</span></h2>
-      <div class="helper-mini-status" id="helperMiniStatus">helper: checking...</div>
-      <div class="candidate-scroll" id="candidateList">${candidateCardsHTML()}</div>
+      <h2><span>🤖 自動カウント</span><button class="auto-toggle ${autoOn ? 'danger' : 'soft'}" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動OFF' : '自動ON'}</button></h2>
+      <div class="helper-mini-status" id="helperMiniStatus">helper: checking... / auto: ${autoOn ? 'ON' : 'OFF'}</div>
+      <div class="auto-history-title">自動カウント履歴</div>
+      <div class="candidate-scroll" id="autoLogList">${autoLogCardsHTML()}</div>
     </section>
     <section class="panel manual-panel">
       <h2>🕹️ 手動カウント</h2>
@@ -713,11 +795,11 @@ function openSettings(){
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, undo, resetAll, setActiveRole, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
-window.addOwCandidate = function(result, roleId, source, externalId){ addCandidate(result, roleId || state.activeRole, source || 'external', externalId || null); };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
+window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || state.activeRole, source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
-  if(d.type === 'owc-candidate') addCandidate(d.result, d.roleId || state.activeRole, d.source || 'postMessage', d.externalId || null);
+  if(d.type === 'owc-candidate') autoRecordFromExternal({result:d.result, roleId:d.roleId || state.activeRole, source:d.source || 'postMessage', id:d.externalId || `post-${Date.now()}`});
 });
 
 let ocrOfflineNotified = false;
@@ -728,9 +810,9 @@ async function pollOcrHelper(){
     if(!res.ok) return;
     const data = await res.json();
     const list = Array.isArray(data.candidates) ? data.candidates : [];
-    list.forEach(c => addCandidate(c.result, c.roleId || state.activeRole, c.source || 'ocr', c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`));
+    list.forEach(c => autoRecordFromExternal(c));
     const mini = document.getElementById('helperMiniStatus');
-    if(mini) mini.textContent = `helper: ${data.status || 'ok'} / scans ${data.scan_count || 0}${data.error ? ' / error: ' + data.error : ''}`;
+    if(mini) mini.textContent = `helper: ${data.status || 'ok'} / scans ${data.scan_count || 0} / auto: ${state.autoEnabled !== false ? 'ON' : 'OFF'}${data.error ? ' / error: ' + data.error : ''}`;
     if(list.length && ocrOfflineNotified) ocrOfflineNotified = false;
   } catch(e) {
     ocrOfflineNotified = true;
@@ -754,9 +836,9 @@ window.addEventListener('keydown', ev => {
   if(key === '1') setActiveRole('tank');
   if(key === '2') setActiveRole('damage');
   if(key === '3') setActiveRole('support');
-  if(key === 'w') addCandidate('win');
-  if(key === 'l') addCandidate('loss');
-  if(key === 'd') addCandidate('draw');
+  if(key === 'w') directRecord(state.activeRole, 'win');
+  if(key === 'l') directRecord(state.activeRole, 'loss');
+  if(key === 'd') directRecord(state.activeRole, 'draw');
   if(key === 'u') undo();
 });
 renderAll();
