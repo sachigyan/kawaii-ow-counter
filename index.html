@@ -920,6 +920,14 @@ function openView(view){
   const base = `${location.pathname}?view=${view}`;
   location.href = base;
 }
+function requestDockWindowSize(){
+  if(getView() !== 'control') return;
+  try {
+    if(sessionStorage.getItem('owc_dock_size_requested') === '1') return;
+    sessionStorage.setItem('owc_dock_size_requested', '1');
+    if(typeof window.resizeTo === 'function') window.resizeTo(430, 845);
+  } catch(e) {}
+}
 async function loadOverlayCustomCss(){
   try {
     const res = await fetch(`${HELPER_BASE}/overlay-css`, {cache:'no-store'});
@@ -988,6 +996,7 @@ function autoLogCardsHTML(){ return countLogRowsHTML(); }
 function renderControl(){
   const autoOn = state.autoEnabled !== false;
   document.body.className = 'app-view control-view';
+  setTimeout(requestDockWindowSize, 80);
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
@@ -1062,12 +1071,7 @@ async function copyState(){
   catch(e){ setStatus('JSONコピーに失敗したかも。'); }
 }
 function openSettings(){
-  try {
-    const w = window.open(HELPER_BASE, '_blank');
-    if(!w) location.href = HELPER_BASE;
-  } catch(e) {
-    location.href = HELPER_BASE;
-  }
+  openView('designer');
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
