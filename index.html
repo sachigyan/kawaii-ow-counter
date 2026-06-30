@@ -255,19 +255,20 @@ code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px
 /* OBS dock compact control view */
 body.control-view {
   height:100vh;
-  overflow:auto;
+  overflow:hidden;
   background:#050509;
   font-size:13px;
 }
 body.control-view .app-wrap {
   width:100%;
   max-width:none;
-  min-height:100vh;
-  padding:7px;
+  height:100vh;
+  min-height:0;
+  padding:6px;
   display:grid;
   grid-template-rows:auto auto auto auto;
-  gap:7px;
-  overflow:visible;
+  gap:6px;
+  overflow:hidden;
 }
 body.control-view .app-head {
   margin:0;
@@ -276,7 +277,7 @@ body.control-view .app-head {
   text-align:center;
   position:relative;
   display:grid;
-  gap:7px;
+  gap:5px;
 }
 body.control-view h1 {
   font-size:21px;
@@ -323,7 +324,7 @@ body.control-view .dock-summary-card span:nth-child(6) { color:#d8ddff; }
 body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
 body.control-view .panel {
   margin:0;
-  padding:7px;
+  padding:6px;
   border-radius:14px;
   background:#101018;
   border:1px solid rgba(255,255,255,.14);
@@ -331,7 +332,7 @@ body.control-view .panel {
 }
 body.control-view .panel h2 {
   font-size:13px;
-  margin:0 0 5px;
+  margin:0 0 4px;
 }
 body.control-view button {
   min-height:34px;
@@ -376,7 +377,7 @@ body.control-view .role-switch button { line-height:1.15; }
 body.control-view .role-switch small { display:block; font-size:10px; color:rgba(255,255,255,.82); }
 body.control-view .grid3 { gap:6px; }
 body.control-view .candidate-scroll {
-  max-height:calc(100vh - 366px);
+  max-height:390px;
   min-height:0;
   overflow:auto;
   padding-right:2px;
@@ -395,18 +396,18 @@ body.control-view select {
   font-size:13px;
 }
 body.control-view .direct-row {
-  grid-template-columns:42px repeat(3, minmax(0,1fr)) 58px;
-  gap:5px;
-  padding:5px;
-  border-radius:13px;
-  margin:5px 0;
+  grid-template-columns:46px repeat(3, minmax(0,1fr)) 58px;
+  gap:4px;
+  padding:4px;
+  border-radius:12px;
+  margin:4px 0;
 }
 body.control-view .direct-row button {
   height:32px;
   min-height:32px;
 }
 body.control-view .role-title {
-  font-size:13px;
+  font-size:15px;
   line-height:1;
   letter-spacing:.01em;
   text-align:center;
@@ -414,7 +415,7 @@ body.control-view .role-title {
 }
 body.control-view .manual-adjust-cell {
   display:grid;
-  grid-template-columns:minmax(28px,1fr) 24px 24px;
+  grid-template-columns:minmax(28px,1fr) 23px 23px;
   gap:3px;
   align-items:center;
   min-width:0;
@@ -436,8 +437,8 @@ body.control-view .manual-adjust-cell.win .pm-label { color:#52e7ff; }
 body.control-view .manual-adjust-cell.loss .pm-label { color:#ff65bd; }
 body.control-view .manual-adjust-cell.draw .pm-label { color:#d8ddff; }
 body.control-view .manual-adjust-cell .pm-btn {
-  width:24px;
-  min-width:24px;
+  width:23px;
+  min-width:23px;
   height:27px;
   min-height:27px;
   padding:0;
@@ -475,20 +476,20 @@ body.control-view .status {
 }
 body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1.25fr; gap:6px; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
-body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:6px; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:13px; color:rgba(255,255,255,.66); }
-body.control-view .helper-mini-status { font-size:13px; color:rgba(255,255,255,.62); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.control-view .helper-mini-status { display:none; }
 
 body.control-view .auto-toggle { min-width:154px; min-height:31px; height:31px; padding:5px 8px; font-size:13px; white-space:normal; }
-body.control-view .auto-history-title { font-size:13px; color:rgba(255,255,255,.72); margin:1px 0 4px; font-weight:900; }
+body.control-view .auto-history-title { display:none; }
 body.control-view .auto-log-row {
   display:grid;
-  grid-template-columns:58px 28px 76px 48px 44px;
+  grid-template-columns:58px 42px 70px 76px 44px;
   gap:4px;
   align-items:center;
-  padding:3px;
+  padding:2px;
   border-radius:10px;
-  margin:3px 0;
+  margin:2px 0;
   background:rgba(255,255,255,.055);
   border:1px solid rgba(255,255,255,.11);
 }
@@ -504,8 +505,8 @@ body.control-view .auto-log-time {
   text-align:center;
 }
 body.control-view .count-log-source {
-  height:28px;
-  min-height:28px;
+  height:27px;
+  min-height:27px;
   border-radius:8px;
   display:flex;
   align-items:center;
@@ -518,15 +519,15 @@ body.control-view .count-log-source {
 body.control-view .count-log-source.auto { color:#52e7ff; }
 body.control-view .count-log-source.manual { color:#c486ff; }
 body.control-view .auto-log-row select {
-  height:28px;
-  min-height:28px;
+  height:27px;
+  min-height:27px;
   padding:2px 4px;
   border-radius:8px;
   font-size:13px;
 }
 body.control-view .auto-log-row .auto-delete {
-  min-height:28px;
-  height:28px;
+  min-height:27px;
+  height:27px;
   padding:0 4px;
   font-size:13px;
   border-radius:8px;
@@ -536,7 +537,7 @@ body.control-view .direct-row button.role-reset {
   color:#fff;
   box-shadow:0 0 10px rgba(185,103,255,.28), inset 0 1px 0 rgba(255,255,255,.12);
 }
-body.control-view .manual-panel { overflow:auto; }
+body.control-view .manual-panel { overflow:hidden; }
 
 
 @media (max-width: 620px) {
@@ -966,7 +967,7 @@ function countLogRowsHTML(){
   return log.slice(0, 40).map((item, idx) => {
     const result = safeResult(item.result);
     const source = item.source === 'auto' ? 'auto' : 'manual';
-    const sourceText = source === 'auto' ? '自' : '手';
+    const sourceText = source === 'auto' ? '自動' : '手動';
     const time = new Date(item.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
     return `<div class="auto-log-row ${idx===0?'latest':''}">
       <div class="auto-log-time">${time}</div>
@@ -975,9 +976,9 @@ function countLogRowsHTML(){
         ${roles.map(r => `<option value="${r.id}" ${safeRole(item.roleId)===r.id?'selected':''}>${r.short}</option>`).join('')}
       </select>
       <select aria-label="result" onchange="OWC.changeCountLogResult('${item.id}', this.value)">
-        <option value="win" ${result==='win'?'selected':''}>W</option>
-        <option value="loss" ${result==='loss'?'selected':''}>L</option>
-        <option value="draw" ${result==='draw'?'selected':''}>D</option>
+        <option value="win" ${result==='win'?'selected':''}>勝ち</option>
+        <option value="loss" ${result==='loss'?'selected':''}>負け</option>
+        <option value="draw" ${result==='draw'?'selected':''}>ドロー</option>
       </select>
       <button class="auto-delete" onclick="OWC.deleteCountLogItem('${item.id}')">削除</button>
     </div>`;
@@ -993,9 +994,7 @@ function renderControl(){
       ${dockSummaryHTML()}
     </div>
     <section class="panel auto-panel">
-      <h2><span>${autoOn ? '🤖 自動カウント中' : '🤖 自動カウント停止中'}</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
-      <div class="helper-mini-status" id="helperMiniStatus">helper: checking... / auto: ${autoOn ? 'ON' : 'OFF'}</div>
-      <div class="auto-history-title">カウント履歴</div>
+      <h2><span>🤖 カウント履歴（自動${autoOn ? 'ON' : 'OFF'}）</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
       <div class="candidate-scroll" id="countLogList">${countLogRowsHTML()}</div>
     </section>
     <section class="panel manual-panel">
