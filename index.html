@@ -484,7 +484,7 @@ body.control-view .auto-toggle { min-width:154px; min-height:31px; height:31px; 
 body.control-view .auto-history-title { display:none; }
 body.control-view .auto-log-row {
   display:grid;
-  grid-template-columns:58px 42px 70px 76px 44px;
+  grid-template-columns:58px 44px 72px 80px 44px;
   gap:4px;
   align-items:center;
   padding:2px;
@@ -564,7 +564,8 @@ const roles = [
 const resultLabels = {
   win: {short:'W', label:'勝ち', candidate:'勝ち候補', cls:'win'},
   loss: {short:'L', label:'負け', candidate:'負け候補', cls:'loss'},
-  draw: {short:'D', label:'ドロー', candidate:'ドロー候補', cls:'draw'}
+  draw: {short:'D', label:'ドロー', candidate:'ドロー候補', cls:'draw'},
+  unknown: {short:'?', label:'不明', candidate:'不明', cls:'unknown'}
 };
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 let state = loadState();
@@ -573,7 +574,6 @@ let statusText = '準備OK。自動カウントONで待機中だよ。';
 function defaultRoleStats(){ return {wins:0,losses:0,draws:0,streak:0}; }
 function defaultState(){
   return {
-    activeRole:'support',
     roles:{tank:defaultRoleStats(), damage:defaultRoleStats(), support:defaultRoleStats()},
     history:[],
     candidates:[],
@@ -598,7 +598,7 @@ function mergeState(raw){
   merged.countLog = Array.isArray(parsed.countLog) ? parsed.countLog.map(normalizeCountLogItem).filter(Boolean).slice(0, 120) : buildCountLogFromLegacy(parsed).slice(0, 120);
   merged.nextCandidateId = Number(parsed.nextCandidateId || (merged.candidates.reduce((m,c)=>Math.max(m, Number(c.id)||0),0)+1) || 1);
   merged.ocrSeen = Array.isArray(parsed.ocrSeen) ? parsed.ocrSeen.slice(-500) : [];
-  if(!roles.some(r=>r.id===merged.activeRole)) merged.activeRole = 'support';
+  delete merged.activeRole;
   return merged;
 }
 function loadState(){
@@ -611,19 +611,35 @@ function saveState(source='local'){
   if(channel && source !== 'channel') channel.postMessage({type:'state', state});
   renderAll();
 }
-function roleLabel(id){ return roles.find(r=>r.id===id)?.label || id; }
-function roleShort(id){ return roles.find(r=>r.id===id)?.short || id; }
+function isKnownRole(id){ return roles.some(r=>r.id===id); }
+function isKnownResult(result){ return ['win','loss','draw'].includes(result); }
+function roleLabel(id){ return roles.find(r=>r.id===id)?.label || '不明'; }
+function roleShort(id){ return roles.find(r=>r.id===id)?.short || '不明'; }
 function setStatus(text){ statusText = text; const el = document.getElementById('status'); if(el) el.textContent = text; }
-function normalizeRoleId(id, fallback='support'){ return roles.some(r=>r.id===id) ? id : fallback; }
-function normalizeResult(result){ return ['win','loss','draw'].includes(result) ? result : 'win'; }
-function safeRole(id){ return normalizeRoleId(id, (typeof state !== 'undefined' && state?.activeRole) ? state.activeRole : 'support'); }
-function safeResult(result){ return normalizeResult(result); }
+function normalizeRoleId(id, fallback='unknown'){
+  if(isKnownRole(id)) return id;
+  const v = String(id || '').trim().toLowerCase();
+  if(['tank','t','タンク'].includes(v)) return 'tank';
+  if(['damage','dps','d','ダメージ'].includes(v)) return 'damage';
+  if(['support','sup','s','サポート'].includes(v)) return 'support';
+  return fallback;
+}
+function normalizeResult(result, fallback='unknown'){
+  if(isKnownResult(result)) return result;
+  const v = String(result || '').trim().toLowerCase();
+  if(['win','w','勝ち','勝利','victory'].includes(v)) return 'win';
+  if(['loss','lose','l','負け','敗北','defeat'].includes(v)) return 'loss';
+  if(['draw','d','ドロー','引き分け'].includes(v)) return 'draw';
+  return fallback;
+}
+function safeRole(id){ return normalizeRoleId(id, 'unknown'); }
+function safeResult(result){ return normalizeResult(result, 'unknown'); }
 function normalizeCountLogItem(item){
   if(!item || typeof item !== 'object') return null;
   return {
     id:String(item.id || `count-${item.createdAt || item.at || Date.now()}-${Math.random().toString(16).slice(2)}`),
-    roleId:normalizeRoleId(item.roleId, 'support'),
-    result:normalizeResult(item.result),
+    roleId:normalizeRoleId(item.roleId, 'unknown'),
+    result:normalizeResult(item.result, 'unknown'),
     source:item.source === 'auto' ? 'auto' : 'manual',
     externalId:item.externalId ? String(item.externalId) : '',
     text:item.text || '',
@@ -651,9 +667,10 @@ function resultStatKey(result){
   result = safeResult(result);
   if(result === 'win') return 'wins';
   if(result === 'loss') return 'losses';
-  return 'draws';
+  if(result === 'draw') return 'draws';
+  return null;
 }
-function resultLetter(result){ return resultLabels[safeResult(result)]?.short || 'W'; }
+function resultLetter(result){ return resultLabels[safeResult(result)]?.short || '?'; }
 function cloneRoles(){
   const out = {};
   roles.forEach(r => { out[r.id] = {...defaultRoleStats(), ...(state.roles?.[r.id] || {})}; });
@@ -676,7 +693,9 @@ function pushCountLogItem(roleId, result, meta={}){
 }
 function applyContribution(roleId, result, delta){
   roleId = safeRole(roleId); result = safeResult(result);
+  if(!isKnownRole(roleId) || !isKnownResult(result)) return;
   const key = resultStatKey(result);
+  if(!key) return;
   const d = state.roles[roleId] || defaultRoleStats();
   d[key] = Math.max(0, Number(d[key] || 0) + Number(delta || 0));
   d.streak = 0;
@@ -685,12 +704,15 @@ function applyContribution(roleId, result, delta){
 
 function record(roleId, result, meta={}){
   roleId = safeRole(roleId); result = safeResult(result);
-  const r = state.roles[roleId];
-  const before = {...r};
-  state.activeRole = roleId;
-  if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
-  if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
-  if(result === 'draw') { r.draws++; r.streak = 0; }
+  const knownRole = isKnownRole(roleId);
+  const knownResult = isKnownResult(result);
+  const r = knownRole ? state.roles[roleId] : null;
+  const before = r ? {...r} : null;
+  if(knownRole && knownResult) {
+    if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
+    if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
+    if(result === 'draw') { r.draws++; r.streak = 0; }
+  }
   const entry = {id:`hist-${Date.now()}-${Math.random().toString(16).slice(2)}`, type:'record', roleId, result, before, meta, at:Date.now()};
   if(meta.addToCountLog !== false) pushCountLogItem(roleId, result, meta);
   state.history.push(entry);
@@ -699,11 +721,11 @@ function record(roleId, result, meta={}){
 }
 function adjustRoleStat(roleId, result, delta){
   roleId = safeRole(roleId); result = safeResult(result);
+  if(!isKnownRole(roleId) || !isKnownResult(result)) { setStatus('ロールか勝敗が不明なので手動加算できないよ。'); saveState(); return; }
   delta = Number(delta || 0);
   const r = state.roles[roleId];
   const key = resultStatKey(result);
   const before = {...r};
-  state.activeRole = roleId;
   if(delta > 0) {
     record(roleId, result, {source:'direct'});
     setStatus(`${roleShort(roleId)}に${resultLetter(result)}を+1したよ。`);
@@ -729,6 +751,7 @@ function directRecord(roleId, result){
 }
 function resetRole(roleId){
   roleId = safeRole(roleId);
+  if(!isKnownRole(roleId)) { setStatus('リセット対象のロールが不明だよ。'); saveState(); return; }
   const before = {...state.roles[roleId]};
   const beforeCountLog = cloneCountLog();
   state.roles[roleId] = defaultRoleStats();
@@ -772,22 +795,19 @@ function cloneRolesFromSnapshot(snapshot){
 }
 function resetAll(){
   if(!confirm('カウントとカウント履歴を全部リセットする？')) return;
-  const active = state.activeRole;
   const autoEnabled = state.autoEnabled !== false;
   state = defaultState();
-  state.activeRole = active;
   state.autoEnabled = autoEnabled;
   setStatus('全部リセットしたよ。');
   saveState();
 }
 
-function addCandidate(result, roleId=state.activeRole, source='manual-test', externalId=null){
+function addCandidate(result, roleId='unknown', source='manual-test', externalId=null){
   result = safeResult(result); roleId = safeRole(roleId);
   if(externalId && state.ocrSeen.includes(String(externalId))) return;
   const candidate = {id:state.nextCandidateId++, externalId:externalId ? String(externalId) : null, roleId, result, source, createdAt:Date.now()};
   state.candidates.push(candidate);
   if(externalId) state.ocrSeen = [...state.ocrSeen, String(externalId)].slice(-500);
-  state.activeRole = roleId;
   setStatus(`${roleLabel(roleId)}の${resultLabels[result].candidate}を候補リストに追加したよ。`);
   saveState();
 }
@@ -815,7 +835,6 @@ function changeCandidateRole(id, roleId){
   const c = state.candidates.find(c => Number(c.id) === id);
   if(!c) return;
   c.roleId = roleId;
-  state.activeRole = roleId;
   setStatus(`候補のロールを${roleLabel(roleId)}に変更したよ。`);
   saveState();
 }
@@ -840,13 +859,13 @@ function editCountLogItem(id, updates={}){
   const oldRole = safeRole(item.roleId);
   const oldResult = safeResult(item.result);
   applyContribution(oldRole, oldResult, -1);
-  if(updates.roleId) item.roleId = safeRole(updates.roleId);
-  if(updates.result) item.result = safeResult(updates.result);
+  if(Object.prototype.hasOwnProperty.call(updates, 'roleId')) item.roleId = safeRole(updates.roleId);
+  if(Object.prototype.hasOwnProperty.call(updates, 'result')) item.result = safeResult(updates.result);
   item.editedAt = Date.now();
   applyContribution(item.roleId, item.result, 1);
   state.history.push({type:'count-log-edit', beforeRoles, beforeCountLog, at:Date.now()});
   state.history = state.history.slice(-300);
-  setStatus(`履歴を ${roleShort(item.roleId)} ${resultLetter(item.result)} に修正したよ。`);
+  setStatus(`履歴を ${roleShort(item.roleId)} ${resultLabels[safeResult(item.result)]?.label || '不明'} に修正したよ。`);
   saveState();
 }
 function changeCountLogRole(id, roleId){ editCountLogItem(id, {roleId}); }
@@ -868,7 +887,9 @@ function changeAutoLogRole(id, roleId){ changeCountLogRole(id, roleId); }
 function changeAutoLogResult(id, result){ changeCountLogResult(id, result); }
 function deleteAutoLogItem(id){ deleteCountLogItem(id); }
 function autoRecordFromExternal(c){
-  const externalId = String(c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`);
+  c = c || {};
+  const rawResult = c.result;
+  const externalId = String(c.id || c.externalId || `${rawResult || 'unknown'}-${c.createdAt || Date.now()}`);
   if(state.ocrSeen.includes(externalId)) return;
   state.ocrSeen = [...state.ocrSeen, externalId].slice(-500);
   if(state.autoEnabled === false) {
@@ -876,16 +897,19 @@ function autoRecordFromExternal(c){
     saveState();
     return;
   }
-  const result = safeResult(c.result);
-  const roleId = safeRole(c.roleId || state.activeRole);
+  const result = safeResult(rawResult);
+  const roleId = safeRole(c.roleId);
   record(roleId, result, {source:'auto', externalId, candidateSource:c.source || 'helper', text:c.text || ''});
-  const info = resultLabels[result] || resultLabels.win;
-  setStatus(`${roleShort(roleId)}に${info.short}を自動カウントしたよ。`);
+  if(!isKnownRole(roleId) || !isKnownResult(result)) {
+    setStatus('ロールか勝敗が不明なので、未加算の履歴として追加したよ。');
+  } else {
+    const info = resultLabels[result] || resultLabels.unknown;
+    setStatus(`${roleShort(roleId)}に${info.label}を自動カウントしたよ。`);
+  }
   saveState();
 }
 function setActiveRole(roleId){
-  state.activeRole = safeRole(roleId);
-  setStatus(`現在ロールを${roleLabel(state.activeRole)}にしたよ。`);
+  setStatus('ロール固定は使わず、履歴のプルダウンで修正する方式だよ。');
   saveState();
 }
 
@@ -928,6 +952,12 @@ function requestDockWindowSize(){
     if(typeof window.resizeTo === 'function') window.resizeTo(430, 845);
   } catch(e) {}
 }
+function requestSettingsWindowSize(){
+  if(getView() !== 'designer') return;
+  try {
+    if(typeof window.resizeTo === 'function') window.resizeTo(1060, 760);
+  } catch(e) {}
+}
 async function loadOverlayCustomCss(){
   try {
     const res = await fetch(`${HELPER_BASE}/overlay-css`, {cache:'no-store'});
@@ -944,7 +974,7 @@ function renderOverlay(){
   loadOverlayCustomCss();
 }
 function roleButtonsHTML(){
-  return roles.map(r => `<button class="soft ${state.activeRole===r.id?'active':''}" onclick="OWC.setActiveRole('${r.id}')">${r.short}</button>`).join('');
+  return '';
 }
 function dockSummaryHTML(){
   return `<div class="dock-summary">${roles.map(r => {
@@ -981,9 +1011,11 @@ function countLogRowsHTML(){
       <div class="auto-log-time">${time}</div>
       <div class="count-log-source ${source}" title="${source === 'auto' ? '自動' : '手動'}">${sourceText}</div>
       <select aria-label="role" onchange="OWC.changeCountLogRole('${item.id}', this.value)">
+        <option value="unknown" ${safeRole(item.roleId)==='unknown'?'selected':''}>不明</option>
         ${roles.map(r => `<option value="${r.id}" ${safeRole(item.roleId)===r.id?'selected':''}>${r.short}</option>`).join('')}
       </select>
       <select aria-label="result" onchange="OWC.changeCountLogResult('${item.id}', this.value)">
+        <option value="unknown" ${result==='unknown'?'selected':''}>不明</option>
         <option value="win" ${result==='win'?'selected':''}>勝ち</option>
         <option value="loss" ${result==='loss'?'selected':''}>負け</option>
         <option value="draw" ${result==='draw'?'selected':''}>ドロー</option>
@@ -1021,6 +1053,7 @@ function renderControl(){
 }
 function renderDesigner(){
   document.body.className = 'app-view';
+  setTimeout(requestSettingsWindowSize, 80);
   const defaults = defaultCssVars();
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
@@ -1028,7 +1061,7 @@ function renderDesigner(){
         <h1>🎨 デザインCSSメモ</h1>
         <p>OBSのカスタムCSSに貼る用。今回からHTML本体側ではCSS変数をJavaScriptで上書きしないから、ここで出したCSSが効きやすいよ。</p>
       </div>
-      <button class="soft" onclick="OWC.openView('control')">操作へ戻る</button>
+      <button class="soft" onclick="OWC.closeSettingsWindow()">閉じる</button>
     </div>
     <section class="panel"><h2>👀 プレビュー</h2><div class="preview-box"><div class="owc-role-list">${counterHTML()}</div></div></section>
     <section class="panel"><h2>⚙️ CSS生成</h2><div class="designer-grid" id="designerForm"></div><div class="grid3" style="margin-top:10px"><button onclick="OWC.updatePreviewCss()">プレビュー反映</button><button class="soft" onclick="OWC.copyCss()">CSSコピー</button><button class="soft" onclick="OWC.fillDefaultCss()">初期値</button></div><textarea id="cssOutput"></textarea><div class="status" id="status">CSSをコピーしてOBSのカスタムCSSへ貼れるよ。</div></section>
@@ -1071,15 +1104,35 @@ async function copyState(){
   catch(e){ setStatus('JSONコピーに失敗したかも。'); }
 }
 function openSettings(){
-  openView('designer');
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('view', 'designer');
+    url.hash = '';
+    const features = 'popup=yes,width=1060,height=760,left=120,top=80,resizable=yes,scrollbars=yes';
+    const w = window.open(url.toString(), 'OWC_SETTINGS', features);
+    if(w) {
+      try { w.focus(); } catch(e) {}
+      setStatus('設定画面を別ウィンドウで開いたよ。');
+    } else {
+      setStatus('設定画面を開けなかったよ。ポップアップ許可を確認してね。');
+    }
+  } catch(e) {
+    setStatus('設定画面を開けなかったよ。');
+  }
+}
+function closeSettingsWindow(){
+  try {
+    if(window.opener) { window.close(); return; }
+  } catch(e) {}
+  openView('control');
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
-window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || state.activeRole, source: source || 'external', id: externalId || `external-${Date.now()}`}); };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings, closeSettingsWindow };
+window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || 'unknown', source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
-  if(d.type === 'owc-candidate') autoRecordFromExternal({result:d.result, roleId:d.roleId || state.activeRole, source:d.source || 'postMessage', id:d.externalId || `post-${Date.now()}`});
+  if(d.type === 'owc-candidate') autoRecordFromExternal({result:d.result, roleId:d.roleId || 'unknown', source:d.source || 'postMessage', id:d.externalId || `post-${Date.now()}`});
 });
 
 let ocrOfflineNotified = false;
@@ -1113,12 +1166,6 @@ window.addEventListener('storage', ev => {
 window.addEventListener('keydown', ev => {
   if(getView() !== 'control') return;
   const key = ev.key.toLowerCase();
-  if(key === '1') setActiveRole('tank');
-  if(key === '2') setActiveRole('damage');
-  if(key === '3') setActiveRole('support');
-  if(key === 'w') directRecord(state.activeRole, 'win');
-  if(key === 'l') directRecord(state.activeRole, 'loss');
-  if(key === 'd') directRecord(state.activeRole, 'draw');
   if(key === 'u') undo();
 });
 renderAll();
