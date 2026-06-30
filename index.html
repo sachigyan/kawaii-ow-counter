@@ -274,6 +274,8 @@ body.control-view .app-head {
   justify-content:center;
   text-align:center;
   position:relative;
+  display:grid;
+  gap:7px;
 }
 body.control-view h1 {
   font-size:21px;
@@ -288,6 +290,33 @@ body.control-view h1 {
   font-family:"Arial Black","Segoe UI Black","Yu Gothic UI",sans-serif;
   text-align:center;
 }
+body.control-view .dock-summary {
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:5px;
+}
+body.control-view .dock-summary-card {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+  padding:5px 4px;
+  border-radius:11px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.13);
+  font-size:11px;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+body.control-view .dock-summary-card b {
+  color:#c486ff;
+  margin-right:1px;
+}
+body.control-view .dock-summary-card span:nth-child(2) { color:#52e7ff; }
+body.control-view .dock-summary-card span:nth-child(3) { color:#ff65bd; }
+body.control-view .dock-summary-card span:nth-child(4) { color:#d8ddff; }
 body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
 body.control-view .panel {
   margin:0;
@@ -362,27 +391,69 @@ body.control-view select {
   font-size:12px;
 }
 body.control-view .direct-row {
-  grid-template-columns:74px 1fr 1fr 1fr 1fr;
-  gap:6px;
-  padding:6px;
+  grid-template-columns:42px minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) 58px;
+  gap:5px;
+  padding:5px;
   border-radius:13px;
-  margin:6px 0;
+  margin:5px 0;
 }
 body.control-view .direct-row button {
-  height:42px;
-  min-height:42px;
+  height:32px;
+  min-height:32px;
 }
 body.control-view .role-title {
-  font-size:16px;
-  line-height:1.05;
+  font-size:14px;
+  line-height:1;
   letter-spacing:.01em;
+  text-align:center;
   text-shadow:0 0 8px rgba(185,103,255,.85);
 }
-body.control-view .role-title small {
-  display:block;
-  font-size:12px;
-  color:rgba(255,255,255,.86);
-  margin-top:2px;
+body.control-view .manual-adjust-cell {
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr) 22px;
+  gap:2px;
+  align-items:center;
+  min-width:0;
+  padding:2px;
+  border-radius:10px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+}
+body.control-view .manual-adjust-cell .pm-label {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  text-align:center;
+  font-size:10px;
+  font-weight:950;
+}
+body.control-view .manual-adjust-cell.win .pm-label { color:#52e7ff; }
+body.control-view .manual-adjust-cell.loss .pm-label { color:#ff65bd; }
+body.control-view .manual-adjust-cell.draw .pm-label { color:#d8ddff; }
+body.control-view .manual-adjust-cell .pm-btn {
+  width:22px;
+  min-width:22px;
+  height:27px;
+  min-height:27px;
+  padding:0;
+  border-radius:8px;
+  font-size:14px;
+  line-height:1;
+}
+body.control-view .manual-adjust-cell .pm-btn.minus {
+  background:#1c1c2b;
+  color:#fff;
+}
+body.control-view .manual-adjust-cell .pm-btn.plus {
+  background:#ffffff;
+  color:#171729;
+}
+body.control-view .direct-row button.role-reset {
+  height:34px;
+  min-height:34px;
+  font-size:11px;
+  padding:0 4px;
 }
 body.control-view .status {
   margin-top:6px;
@@ -402,21 +473,42 @@ body.control-view .helper-mini-status { font-size:11px; color:rgba(255,255,255,.
 
 body.control-view .auto-toggle { min-width:158px; min-height:32px; height:32px; padding:6px 8px; font-size:11px; white-space:normal; }
 body.control-view .auto-history-title { font-size:12px; color:rgba(255,255,255,.72); margin:2px 0 5px; font-weight:900; }
-body.control-view .auto-log-card {
+body.control-view .auto-log-row {
   display:grid;
-  grid-template-columns:1fr;
-  gap:3px;
-  padding:7px 8px;
-  border-radius:12px;
-  margin:5px 0;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
+  grid-template-columns:58px minmax(0,1fr) 48px 46px;
+  gap:4px;
+  align-items:center;
+  padding:4px;
+  border-radius:10px;
+  margin:3px 0;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.11);
 }
-body.control-view .auto-log-card b { font-size:13px; }
-body.control-view .auto-log-card small { display:block; font-size:10px; color:rgba(255,255,255,.62); }
-body.control-view .auto-log-card .win { color:#52e7ff; }
-body.control-view .auto-log-card .loss { color:#ff65bd; }
-body.control-view .auto-log-card .draw { color:#d8ddff; }
+body.control-view .auto-log-row.latest {
+  box-shadow:0 0 0 1px rgba(185,103,255,.24) inset;
+}
+body.control-view .auto-log-time {
+  font-size:10px;
+  color:rgba(255,255,255,.76);
+  font-weight:900;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  text-align:center;
+}
+body.control-view .auto-log-row select {
+  height:29px;
+  min-height:29px;
+  padding:3px 4px;
+  border-radius:8px;
+  font-size:11px;
+}
+body.control-view .auto-log-row .auto-delete {
+  min-height:29px;
+  height:29px;
+  padding:0 4px;
+  font-size:10px;
+  border-radius:8px;
+}
 body.control-view .direct-row button.role-reset {
   background:linear-gradient(135deg,#241b35,#58406f);
   color:#fff;
@@ -447,9 +539,9 @@ const roles = [
   {id:'support', short:'Sup', label:'サポート'}
 ];
 const resultLabels = {
-  win: {short:'勝ち', candidate:'勝ち候補', cls:'win'},
-  loss: {short:'負け', candidate:'負け候補', cls:'loss'},
-  draw: {short:'ドロー', candidate:'ドロー候補', cls:'draw'}
+  win: {short:'W', label:'勝ち', candidate:'勝ち候補', cls:'win'},
+  loss: {short:'L', label:'負け', candidate:'負け候補', cls:'loss'},
+  draw: {short:'D', label:'ドロー', candidate:'ドロー候補', cls:'draw'}
 };
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 let state = loadState();
@@ -499,6 +591,27 @@ function roleShort(id){ return roles.find(r=>r.id===id)?.short || id; }
 function setStatus(text){ statusText = text; const el = document.getElementById('status'); if(el) el.textContent = text; }
 function safeRole(id){ return roles.some(r=>r.id===id) ? id : state.activeRole || 'support'; }
 function safeResult(result){ return ['win','loss','draw'].includes(result) ? result : 'win'; }
+function resultStatKey(result){
+  result = safeResult(result);
+  if(result === 'win') return 'wins';
+  if(result === 'loss') return 'losses';
+  return 'draws';
+}
+function resultLetter(result){ return resultLabels[safeResult(result)]?.short || 'W'; }
+function cloneRoles(){
+  const out = {};
+  roles.forEach(r => { out[r.id] = {...defaultRoleStats(), ...(state.roles?.[r.id] || {})}; });
+  return out;
+}
+function cloneAutoLog(){ return (Array.isArray(state.autoLog) ? state.autoLog : []).map(item => ({...item})); }
+function applyContribution(roleId, result, delta){
+  roleId = safeRole(roleId); result = safeResult(result);
+  const key = resultStatKey(result);
+  const d = state.roles[roleId] || defaultRoleStats();
+  d[key] = Math.max(0, Number(d[key] || 0) + Number(delta || 0));
+  d.streak = 0;
+  state.roles[roleId] = d;
+}
 
 function record(roleId, result, meta={}){
   roleId = safeRole(roleId); result = safeResult(result);
@@ -508,30 +621,61 @@ function record(roleId, result, meta={}){
   if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
   if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
   if(result === 'draw') { r.draws++; r.streak = 0; }
-  const entry = {type:'record', roleId, result, before, meta, at:Date.now()};
+  const entry = {id:`hist-${Date.now()}-${Math.random().toString(16).slice(2)}`, type:'record', roleId, result, before, meta, at:Date.now()};
   state.history.push(entry);
   state.history = state.history.slice(-300);
   return entry;
 }
+function adjustRoleStat(roleId, result, delta){
+  roleId = safeRole(roleId); result = safeResult(result);
+  delta = Number(delta || 0);
+  const r = state.roles[roleId];
+  const key = resultStatKey(result);
+  const before = {...r};
+  state.activeRole = roleId;
+  if(delta > 0) {
+    record(roleId, result, {source:'direct'});
+    setStatus(`${roleShort(roleId)}に${resultLetter(result)}を+1したよ。`);
+    saveState();
+    return;
+  }
+  if(delta < 0) {
+    if(Number(r[key] || 0) <= 0) {
+      setStatus(`${roleShort(roleId)}の${resultLetter(result)}はもう0だよ。`);
+      saveState();
+      return;
+    }
+    r[key] = Math.max(0, Number(r[key] || 0) - 1);
+    r.streak = 0;
+    state.history.push({type:'manual-adjust', roleId, result, delta:-1, before, at:Date.now()});
+    state.history = state.history.slice(-300);
+    setStatus(`${roleShort(roleId)}の${resultLetter(result)}を-1したよ。`);
+    saveState();
+  }
+}
 function directRecord(roleId, result){
-  record(roleId, result, {source:'direct'});
-  setStatus(`${roleLabel(roleId)}に${resultLabels[result].short}を追加したよぉ。`);
-  saveState();
+  adjustRoleStat(roleId, result, 1);
 }
 function resetRole(roleId){
   roleId = safeRole(roleId);
-  if(!confirm(`${roleLabel(roleId)}だけリセットする？`)) return;
   const before = {...state.roles[roleId]};
   state.roles[roleId] = defaultRoleStats();
   state.history.push({type:'role-reset', roleId, before, at:Date.now()});
   state.history = state.history.slice(-300);
-  setStatus(`${roleLabel(roleId)}だけリセットしたよ。`);
+  setStatus(`${roleShort(roleId)}だけリセットしたよ。`);
   saveState();
 }
 function undo(){
   const last = state.history.pop();
   if(!last) { setStatus('戻せる履歴がないよぉ。'); saveState(); return; }
-  if(last.type === 'record' && last.before && state.roles[last.roleId]) {
+  if(last.beforeRoles) {
+    state.roles = cloneRolesFromSnapshot(last.beforeRoles);
+    if(last.beforeAutoLog) state.autoLog = last.beforeAutoLog.map(item => ({...item}));
+    setStatus('直前の修正を1つ戻したよ。');
+    saveState();
+    return;
+  }
+  if((last.type === 'record' || last.type === 'manual-adjust') && last.before && state.roles[last.roleId]) {
     state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
     setStatus('直前のカウントを1つ戻したよ。');
     saveState();
@@ -539,12 +683,17 @@ function undo(){
   }
   if(last.type === 'role-reset' && last.before && state.roles[last.roleId]) {
     state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
-    setStatus(`${roleLabel(last.roleId)}のリセットを戻したよ。`);
+    setStatus(`${roleShort(last.roleId)}のリセットを戻したよ。`);
     saveState();
     return;
   }
   setStatus('戻せる履歴がないよぉ。');
   saveState();
+}
+function cloneRolesFromSnapshot(snapshot){
+  const out = {};
+  roles.forEach(r => { out[r.id] = {...defaultRoleStats(), ...(snapshot?.[r.id] || {})}; });
+  return out;
 }
 function resetAll(){
   if(!confirm('カウントと自動カウント履歴を全部リセットする？')) return;
@@ -605,6 +754,39 @@ function clearCandidates(){
 function toggleAutoEnabled(){
   state.autoEnabled = state.autoEnabled === false;
   setStatus(state.autoEnabled ? '自動読み取りをONにしたよ。' : '自動読み取りをOFFにしたよ。');
+  saveState();
+}
+function editAutoLogItem(id, updates={}){
+  const idx = (Array.isArray(state.autoLog) ? state.autoLog : []).findIndex(item => String(item.id) === String(id));
+  if(idx < 0) { setStatus('その自動履歴が見つからなかったよ。'); return; }
+  const beforeRoles = cloneRoles();
+  const beforeAutoLog = cloneAutoLog();
+  const item = state.autoLog[idx];
+  const oldRole = safeRole(item.roleId);
+  const oldResult = safeResult(item.result);
+  applyContribution(oldRole, oldResult, -1);
+  if(updates.roleId) item.roleId = safeRole(updates.roleId);
+  if(updates.result) item.result = safeResult(updates.result);
+  item.editedAt = Date.now();
+  applyContribution(item.roleId, item.result, 1);
+  state.history.push({type:'auto-edit', beforeRoles, beforeAutoLog, at:Date.now()});
+  state.history = state.history.slice(-300);
+  setStatus(`自動履歴を ${roleShort(item.roleId)} ${resultLetter(item.result)} に修正したよ。`);
+  saveState();
+}
+function changeAutoLogRole(id, roleId){ editAutoLogItem(id, {roleId}); }
+function changeAutoLogResult(id, result){ editAutoLogItem(id, {result}); }
+function deleteAutoLogItem(id){
+  const idx = (Array.isArray(state.autoLog) ? state.autoLog : []).findIndex(item => String(item.id) === String(id));
+  if(idx < 0) { setStatus('その自動履歴が見つからなかったよ。'); return; }
+  const beforeRoles = cloneRoles();
+  const beforeAutoLog = cloneAutoLog();
+  const item = state.autoLog[idx];
+  applyContribution(item.roleId, item.result, -1);
+  state.autoLog.splice(idx, 1);
+  state.history.push({type:'auto-delete', beforeRoles, beforeAutoLog, at:Date.now()});
+  state.history = state.history.slice(-300);
+  setStatus('自動履歴を1件削除したよ。');
   saveState();
 }
 function autoRecordFromExternal(c){
@@ -685,25 +867,48 @@ function renderOverlay(){
   loadOverlayCustomCss();
 }
 function roleButtonsHTML(){
-  return roles.map(r => `<button class="soft ${state.activeRole===r.id?'active':''}" onclick="OWC.setActiveRole('${r.id}')">${r.short}<br><small>${r.label}</small></button>`).join('');
+  return roles.map(r => `<button class="soft ${state.activeRole===r.id?'active':''}" onclick="OWC.setActiveRole('${r.id}')">${r.short}</button>`).join('');
+}
+function dockSummaryHTML(){
+  return `<div class="dock-summary">${roles.map(r => {
+    const d = state.roles[r.id] || defaultRoleStats();
+    return `<div class="dock-summary-card"><b>${r.short}</b><span>${Number(d.wins)||0}W</span><span>${Number(d.losses)||0}L</span><span>${Number(d.draws)||0}D</span></div>`;
+  }).join('')}</div>`;
+}
+function adjustCellHTML(roleId, result, label){
+  const cls = resultLabels[result]?.cls || '';
+  return `<div class="manual-adjust-cell ${cls}">
+    <button class="pm-btn minus" onclick="OWC.adjustRoleStat('${roleId}','${result}',-1)">−</button>
+    <span class="pm-label">±${label}</span>
+    <button class="pm-btn plus" onclick="OWC.adjustRoleStat('${roleId}','${result}',1)">＋</button>
+  </div>`;
 }
 function directRowsHTML(){
   return roles.map(r => `<div class="direct-row">
-    <div class="role-title">${r.short}<br><small>${r.label}</small></div>
-    <button class="win" onclick="OWC.directRecord('${r.id}','win')">+ 勝ち</button>
-    <button class="loss" onclick="OWC.directRecord('${r.id}','loss')">+ 負け</button>
-    <button class="draw" onclick="OWC.directRecord('${r.id}','draw')">+ ドロー</button>
+    <div class="role-title">${r.short}</div>
+    ${adjustCellHTML(r.id, 'win', '勝ち')}
+    ${adjustCellHTML(r.id, 'loss', '負け')}
+    ${adjustCellHTML(r.id, 'draw', 'ドロー')}
     <button class="role-reset" onclick="OWC.resetRole('${r.id}')">リセット</button>
   </div>`).join('');
 }
 function autoLogCardsHTML(){
   const log = Array.isArray(state.autoLog) ? state.autoLog : [];
   if(!log.length) return `<p class="candidate-empty">まだ自動カウント履歴はないよ。</p>`;
-  return log.slice(0, 20).map((item, idx) => {
-    const info = resultLabels[item.result] || resultLabels.win;
+  return log.slice(0, 24).map((item, idx) => {
+    const result = safeResult(item.result);
     const time = new Date(item.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    return `<div class="auto-log-card">
-      <div><b class="${info.cls}">${roleShort(item.roleId)} / ${info.short}</b><small>${time} / 自動加算${idx===0?' / 最新':''}</small></div>
+    return `<div class="auto-log-row ${idx===0?'latest':''}">
+      <div class="auto-log-time">${time}</div>
+      <select aria-label="role" onchange="OWC.changeAutoLogRole('${item.id}', this.value)">
+        ${roles.map(r => `<option value="${r.id}" ${safeRole(item.roleId)===r.id?'selected':''}>${r.short}</option>`).join('')}
+      </select>
+      <select aria-label="result" onchange="OWC.changeAutoLogResult('${item.id}', this.value)">
+        <option value="win" ${result==='win'?'selected':''}>W</option>
+        <option value="loss" ${result==='loss'?'selected':''}>L</option>
+        <option value="draw" ${result==='draw'?'selected':''}>D</option>
+      </select>
+      <button class="auto-delete" onclick="OWC.deleteAutoLogItem('${item.id}')">削除</button>
     </div>`;
   }).join('');
 }
@@ -713,6 +918,7 @@ function renderControl(){
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
+      ${dockSummaryHTML()}
     </div>
     <section class="panel auto-panel">
       <h2><span>${autoOn ? '🤖 自動カウント中' : '🤖 自動カウント停止中'}</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
@@ -795,7 +1001,7 @@ function openSettings(){
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings };
 window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || state.activeRole, source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
