@@ -247,9 +247,14 @@ option { color:#111; }
   overflow:visible;
 }
 .preview-box .owc-role-list { transform-origin:top left; }
+.designer-view .app-wrap { max-width:980px; }
 .designer-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-.field label { display:block; font-weight:900; margin:0 0 5px; color:#fff; }
-#cssOutput { min-height:220px; font-family:ui-monospace,Consolas,monospace; font-weight:500; line-height:1.5; }
+.field { padding:10px; border-radius:14px; background:rgba(0,0,0,.16); border:1px solid rgba(255,255,255,.10); }
+.field label { display:flex; justify-content:space-between; align-items:center; gap:10px; font-weight:900; margin:0 0 8px; color:#fff; }
+.field output { min-width:58px; text-align:right; color:#fff063; font-weight:950; font-variant-numeric:tabular-nums; }
+.field input[type=range] { width:100%; padding:0; accent-color:var(--owc-role-color); cursor:pointer; }
+.field input[type=color] { min-height:42px; padding:4px; cursor:pointer; }
+.designer-actions { display:grid; grid-template-columns:2fr 1fr; gap:8px; margin-top:10px; }
 code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px 6px; }
 
 /* OBS dock compact control view */
@@ -257,17 +262,15 @@ body.control-view {
   height:100vh;
   overflow:hidden;
   background:#050509;
-  font-size:13px;
 }
 body.control-view .app-wrap {
   width:100%;
   max-width:none;
   height:100vh;
-  min-height:0;
-  padding:6px;
+  padding:9px;
   display:grid;
-  grid-template-rows:auto auto auto auto;
-  gap:6px;
+  grid-template-rows:auto minmax(92px,1fr) auto auto;
+  gap:8px;
   overflow:hidden;
 }
 body.control-view .app-head {
@@ -277,7 +280,7 @@ body.control-view .app-head {
   text-align:center;
   position:relative;
   display:grid;
-  gap:5px;
+  gap:7px;
 }
 body.control-view h1 {
   font-size:21px;
@@ -301,13 +304,13 @@ body.control-view .dock-summary-card {
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:3px;
+  gap:4px;
   min-width:0;
   padding:5px 4px;
   border-radius:11px;
   background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.13);
-  font-size:13px;
+  font-size:11px;
   font-weight:950;
   font-variant-numeric:tabular-nums;
   white-space:nowrap;
@@ -317,28 +320,26 @@ body.control-view .dock-summary-card b {
   margin-right:1px;
 }
 body.control-view .dock-summary-card span:nth-child(2) { color:#52e7ff; }
-body.control-view .dock-summary-card span:nth-child(3),
-body.control-view .dock-summary-card span:nth-child(5) { color:rgba(255,255,255,.72); }
-body.control-view .dock-summary-card span:nth-child(4) { color:#ff65bd; }
-body.control-view .dock-summary-card span:nth-child(6) { color:#d8ddff; }
+body.control-view .dock-summary-card span:nth-child(3) { color:#ff65bd; }
+body.control-view .dock-summary-card span:nth-child(4) { color:#d8ddff; }
 body.control-view p, body.control-view .muted, body.control-view small, body.control-view code { display:none; }
 body.control-view .panel {
   margin:0;
-  padding:6px;
-  border-radius:14px;
+  padding:9px;
+  border-radius:15px;
   background:#101018;
   border:1px solid rgba(255,255,255,.14);
   box-shadow:none;
 }
 body.control-view .panel h2 {
-  font-size:13px;
-  margin:0 0 4px;
+  font-size:14px;
+  margin:0 0 6px;
 }
 body.control-view button {
-  min-height:34px;
-  height:34px;
-  padding:7px 8px;
-  border-radius:10px;
+  min-height:38px;
+  height:38px;
+  padding:8px 9px;
+  border-radius:11px;
   font-size:13px;
   color:#fff;
   background:#24243a;
@@ -349,7 +350,7 @@ body.control-view button {
   align-items:center;
   justify-content:center;
   text-align:center;
-  line-height:1.1;
+  line-height:1.15;
 }
 body.control-view button.win {
   background:#3ad2ee;
@@ -377,8 +378,7 @@ body.control-view .role-switch button { line-height:1.15; }
 body.control-view .role-switch small { display:block; font-size:10px; color:rgba(255,255,255,.82); }
 body.control-view .grid3 { gap:6px; }
 body.control-view .candidate-scroll {
-  max-height:390px;
-  min-height:0;
+  max-height:100%;
   overflow:auto;
   padding-right:2px;
 }
@@ -391,23 +391,23 @@ body.control-view .candidate-card {
 }
 body.control-view .candidate-label { font-size:13px; }
 body.control-view select {
-  padding:5px 5px;
+  padding:6px 4px;
   border-radius:9px;
-  font-size:13px;
+  font-size:12px;
 }
 body.control-view .direct-row {
-  grid-template-columns:46px repeat(3, minmax(0,1fr)) 58px;
-  gap:4px;
-  padding:4px;
-  border-radius:12px;
-  margin:4px 0;
+  grid-template-columns:42px minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) 58px;
+  gap:5px;
+  padding:5px;
+  border-radius:13px;
+  margin:5px 0;
 }
 body.control-view .direct-row button {
   height:32px;
   min-height:32px;
 }
 body.control-view .role-title {
-  font-size:15px;
+  font-size:14px;
   line-height:1;
   letter-spacing:.01em;
   text-align:center;
@@ -415,8 +415,8 @@ body.control-view .role-title {
 }
 body.control-view .manual-adjust-cell {
   display:grid;
-  grid-template-columns:minmax(28px,1fr) 23px 23px;
-  gap:3px;
+  grid-template-columns:22px minmax(0,1fr) 22px;
+  gap:2px;
   align-items:center;
   min-width:0;
   padding:2px;
@@ -430,66 +430,62 @@ body.control-view .manual-adjust-cell .pm-label {
   text-overflow:ellipsis;
   white-space:nowrap;
   text-align:center;
-  font-size:13px;
+  font-size:10px;
   font-weight:950;
 }
 body.control-view .manual-adjust-cell.win .pm-label { color:#52e7ff; }
 body.control-view .manual-adjust-cell.loss .pm-label { color:#ff65bd; }
 body.control-view .manual-adjust-cell.draw .pm-label { color:#d8ddff; }
 body.control-view .manual-adjust-cell .pm-btn {
-  width:23px;
-  min-width:23px;
+  width:22px;
+  min-width:22px;
   height:27px;
   min-height:27px;
   padding:0;
   border-radius:8px;
-  font-size:15px;
+  font-size:14px;
   line-height:1;
 }
-body.control-view .manual-adjust-cell.win .pm-btn {
-  background:#3ad2ee;
-  color:#06111f;
+body.control-view .manual-adjust-cell .pm-btn.minus {
+  background:#1c1c2b;
+  color:#fff;
 }
-body.control-view .manual-adjust-cell.loss .pm-btn {
-  background:#f54ca7;
-  color:#101018;
-}
-body.control-view .manual-adjust-cell.draw .pm-btn {
-  background:#b8bec8;
-  color:#101018;
+body.control-view .manual-adjust-cell .pm-btn.plus {
+  background:#ffffff;
+  color:#171729;
 }
 body.control-view .direct-row button.role-reset {
   height:34px;
   min-height:34px;
-  font-size:13px;
+  font-size:11px;
   padding:0 4px;
 }
 body.control-view .status {
   margin-top:6px;
   min-height:28px;
   padding:6px 8px;
-  font-size:13px;
+  font-size:12px;
   border-radius:10px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
-body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1.25fr; gap:6px; }
+body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:6px; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
-body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:6px; }
-body.control-view .candidate-empty { margin:4px 0 0; font-size:13px; color:rgba(255,255,255,.66); }
-body.control-view .helper-mini-status { display:none; }
+body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+body.control-view .candidate-empty { margin:4px 0 0; font-size:12px; color:rgba(255,255,255,.66); }
+body.control-view .helper-mini-status { font-size:11px; color:rgba(255,255,255,.62); margin:0 0 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-body.control-view .auto-toggle { min-width:154px; min-height:31px; height:31px; padding:5px 8px; font-size:13px; white-space:normal; }
-body.control-view .auto-history-title { display:none; }
+body.control-view .auto-toggle { min-width:158px; min-height:32px; height:32px; padding:6px 8px; font-size:11px; white-space:normal; }
+body.control-view .auto-history-title { font-size:12px; color:rgba(255,255,255,.72); margin:2px 0 5px; font-weight:900; }
 body.control-view .auto-log-row {
   display:grid;
-  grid-template-columns:58px 44px 72px 80px 44px;
+  grid-template-columns:58px minmax(0,1fr) 48px 46px;
   gap:4px;
   align-items:center;
-  padding:2px;
+  padding:4px;
   border-radius:10px;
-  margin:2px 0;
+  margin:3px 0;
   background:rgba(255,255,255,.055);
   border:1px solid rgba(255,255,255,.11);
 }
@@ -497,39 +493,25 @@ body.control-view .auto-log-row.latest {
   box-shadow:0 0 0 1px rgba(185,103,255,.24) inset;
 }
 body.control-view .auto-log-time {
-  font-size:13px;
+  font-size:10px;
   color:rgba(255,255,255,.76);
   font-weight:900;
   font-variant-numeric:tabular-nums;
   white-space:nowrap;
   text-align:center;
 }
-body.control-view .count-log-source {
-  height:27px;
-  min-height:27px;
-  border-radius:8px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:13px;
-  font-weight:950;
-  background:rgba(255,255,255,.09);
-  color:#fff;
-}
-body.control-view .count-log-source.auto { color:#52e7ff; }
-body.control-view .count-log-source.manual { color:#c486ff; }
 body.control-view .auto-log-row select {
-  height:27px;
-  min-height:27px;
-  padding:2px 4px;
+  height:29px;
+  min-height:29px;
+  padding:3px 4px;
   border-radius:8px;
-  font-size:13px;
+  font-size:11px;
 }
 body.control-view .auto-log-row .auto-delete {
-  min-height:27px;
-  height:27px;
+  min-height:29px;
+  height:29px;
   padding:0 4px;
-  font-size:13px;
+  font-size:10px;
   border-radius:8px;
 }
 body.control-view .direct-row button.role-reset {
@@ -537,7 +519,7 @@ body.control-view .direct-row button.role-reset {
   color:#fff;
   box-shadow:0 0 10px rgba(185,103,255,.28), inset 0 1px 0 rgba(255,255,255,.12);
 }
-body.control-view .manual-panel { overflow:hidden; }
+body.control-view .manual-panel { overflow:auto; }
 
 
 @media (max-width: 620px) {
@@ -554,6 +536,7 @@ body.control-view .manual-panel { overflow:hidden; }
 (function(){
 'use strict';
 const STORAGE_STATE = 'sachigyan_ow_counter_static_state_v1';
+const STORAGE_DESIGN = 'sachigyan_ow_counter_design_css_v1';
 const CHANNEL_NAME = 'sachigyan_ow_counter_static_channel_v1';
 const HELPER_BASE = 'http://127.0.0.1:17656';
 const roles = [
@@ -564,8 +547,7 @@ const roles = [
 const resultLabels = {
   win: {short:'W', label:'勝ち', candidate:'勝ち候補', cls:'win'},
   loss: {short:'L', label:'負け', candidate:'負け候補', cls:'loss'},
-  draw: {short:'D', label:'ドロー', candidate:'ドロー候補', cls:'draw'},
-  unknown: {short:'?', label:'不明', candidate:'不明', cls:'unknown'}
+  draw: {short:'D', label:'ドロー', candidate:'ドロー候補', cls:'draw'}
 };
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 let state = loadState();
@@ -574,12 +556,12 @@ let statusText = '準備OK。自動カウントONで待機中だよ。';
 function defaultRoleStats(){ return {wins:0,losses:0,draws:0,streak:0}; }
 function defaultState(){
   return {
+    activeRole:'support',
     roles:{tank:defaultRoleStats(), damage:defaultRoleStats(), support:defaultRoleStats()},
     history:[],
     candidates:[],
     autoEnabled:true,
     autoLog:[],
-    countLog:[],
     nextCandidateId:1,
     ocrSeen:[],
     updatedAt:Date.now()
@@ -595,10 +577,9 @@ function mergeState(raw){
   merged.candidates = Array.isArray(parsed.candidates) ? parsed.candidates : [];
   merged.autoEnabled = parsed.autoEnabled !== false;
   merged.autoLog = Array.isArray(parsed.autoLog) ? parsed.autoLog.slice(0, 60) : [];
-  merged.countLog = Array.isArray(parsed.countLog) ? parsed.countLog.map(normalizeCountLogItem).filter(Boolean).slice(0, 120) : buildCountLogFromLegacy(parsed).slice(0, 120);
   merged.nextCandidateId = Number(parsed.nextCandidateId || (merged.candidates.reduce((m,c)=>Math.max(m, Number(c.id)||0),0)+1) || 1);
   merged.ocrSeen = Array.isArray(parsed.ocrSeen) ? parsed.ocrSeen.slice(-500) : [];
-  delete merged.activeRole;
+  if(!roles.some(r=>r.id===merged.activeRole)) merged.activeRole = 'support';
   return merged;
 }
 function loadState(){
@@ -611,91 +592,27 @@ function saveState(source='local'){
   if(channel && source !== 'channel') channel.postMessage({type:'state', state});
   renderAll();
 }
-function isKnownRole(id){ return roles.some(r=>r.id===id); }
-function isKnownResult(result){ return ['win','loss','draw'].includes(result); }
-function roleLabel(id){ return roles.find(r=>r.id===id)?.label || '不明'; }
-function roleShort(id){ return roles.find(r=>r.id===id)?.short || '不明'; }
+function roleLabel(id){ return roles.find(r=>r.id===id)?.label || id; }
+function roleShort(id){ return roles.find(r=>r.id===id)?.short || id; }
 function setStatus(text){ statusText = text; const el = document.getElementById('status'); if(el) el.textContent = text; }
-function normalizeRoleId(id, fallback='unknown'){
-  if(isKnownRole(id)) return id;
-  const v = String(id || '').trim().toLowerCase();
-  if(['tank','t','タンク'].includes(v)) return 'tank';
-  if(['damage','dps','d','ダメージ'].includes(v)) return 'damage';
-  if(['support','sup','s','サポート'].includes(v)) return 'support';
-  return fallback;
-}
-function normalizeResult(result, fallback='unknown'){
-  if(isKnownResult(result)) return result;
-  const v = String(result || '').trim().toLowerCase();
-  if(['win','w','勝ち','勝利','victory'].includes(v)) return 'win';
-  if(['loss','lose','l','負け','敗北','defeat'].includes(v)) return 'loss';
-  if(['draw','d','ドロー','引き分け'].includes(v)) return 'draw';
-  return fallback;
-}
-function safeRole(id){ return normalizeRoleId(id, 'unknown'); }
-function safeResult(result){ return normalizeResult(result, 'unknown'); }
-function normalizeCountLogItem(item){
-  if(!item || typeof item !== 'object') return null;
-  return {
-    id:String(item.id || `count-${item.createdAt || item.at || Date.now()}-${Math.random().toString(16).slice(2)}`),
-    roleId:normalizeRoleId(item.roleId, 'unknown'),
-    result:normalizeResult(item.result, 'unknown'),
-    source:item.source === 'auto' ? 'auto' : 'manual',
-    externalId:item.externalId ? String(item.externalId) : '',
-    text:item.text || '',
-    createdAt:Number(item.createdAt || item.at || Date.now())
-  };
-}
-function buildCountLogFromLegacy(parsed){
-  const out = [];
-  const seen = new Set();
-  const add = (item) => {
-    const n = normalizeCountLogItem(item);
-    if(!n) return;
-    const key = n.externalId || n.id;
-    if(seen.has(key)) return;
-    seen.add(key);
-    out.push(n);
-  };
-  (Array.isArray(parsed.autoLog) ? parsed.autoLog : []).forEach(item => add({...item, source:'auto'}));
-  (Array.isArray(parsed.history) ? parsed.history : []).forEach(item => {
-    if(item?.type === 'record' && item?.meta?.source !== 'auto') add({id:item.id, roleId:item.roleId, result:item.result, source:'manual', createdAt:item.at});
-  });
-  return out.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-}
+function safeRole(id){ return roles.some(r=>r.id===id) ? id : state.activeRole || 'support'; }
+function safeResult(result){ return ['win','loss','draw'].includes(result) ? result : 'win'; }
 function resultStatKey(result){
   result = safeResult(result);
   if(result === 'win') return 'wins';
   if(result === 'loss') return 'losses';
-  if(result === 'draw') return 'draws';
-  return null;
+  return 'draws';
 }
-function resultLetter(result){ return resultLabels[safeResult(result)]?.short || '?'; }
+function resultLetter(result){ return resultLabels[safeResult(result)]?.short || 'W'; }
 function cloneRoles(){
   const out = {};
   roles.forEach(r => { out[r.id] = {...defaultRoleStats(), ...(state.roles?.[r.id] || {})}; });
   return out;
 }
 function cloneAutoLog(){ return (Array.isArray(state.autoLog) ? state.autoLog : []).map(item => ({...item})); }
-function cloneCountLog(){ return (Array.isArray(state.countLog) ? state.countLog : []).map(item => ({...item})); }
-function pushCountLogItem(roleId, result, meta={}){
-  const item = normalizeCountLogItem({
-    id:meta.countLogId || `count-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    roleId,
-    result,
-    source:meta.source === 'auto' ? 'auto' : 'manual',
-    externalId:meta.externalId || '',
-    text:meta.text || '',
-    createdAt:Date.now()
-  });
-  if(!item) return;
-  state.countLog = [item, ...(Array.isArray(state.countLog) ? state.countLog : [])].slice(0, 120);
-}
 function applyContribution(roleId, result, delta){
   roleId = safeRole(roleId); result = safeResult(result);
-  if(!isKnownRole(roleId) || !isKnownResult(result)) return;
   const key = resultStatKey(result);
-  if(!key) return;
   const d = state.roles[roleId] || defaultRoleStats();
   d[key] = Math.max(0, Number(d[key] || 0) + Number(delta || 0));
   d.streak = 0;
@@ -704,28 +621,24 @@ function applyContribution(roleId, result, delta){
 
 function record(roleId, result, meta={}){
   roleId = safeRole(roleId); result = safeResult(result);
-  const knownRole = isKnownRole(roleId);
-  const knownResult = isKnownResult(result);
-  const r = knownRole ? state.roles[roleId] : null;
-  const before = r ? {...r} : null;
-  if(knownRole && knownResult) {
-    if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
-    if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
-    if(result === 'draw') { r.draws++; r.streak = 0; }
-  }
+  const r = state.roles[roleId];
+  const before = {...r};
+  state.activeRole = roleId;
+  if(result === 'win') { r.wins++; r.streak = r.streak > 0 ? r.streak + 1 : 1; }
+  if(result === 'loss') { r.losses++; r.streak = r.streak < 0 ? r.streak - 1 : -1; }
+  if(result === 'draw') { r.draws++; r.streak = 0; }
   const entry = {id:`hist-${Date.now()}-${Math.random().toString(16).slice(2)}`, type:'record', roleId, result, before, meta, at:Date.now()};
-  if(meta.addToCountLog !== false) pushCountLogItem(roleId, result, meta);
   state.history.push(entry);
   state.history = state.history.slice(-300);
   return entry;
 }
 function adjustRoleStat(roleId, result, delta){
   roleId = safeRole(roleId); result = safeResult(result);
-  if(!isKnownRole(roleId) || !isKnownResult(result)) { setStatus('ロールか勝敗が不明なので手動加算できないよ。'); saveState(); return; }
   delta = Number(delta || 0);
   const r = state.roles[roleId];
   const key = resultStatKey(result);
   const before = {...r};
+  state.activeRole = roleId;
   if(delta > 0) {
     record(roleId, result, {source:'direct'});
     setStatus(`${roleShort(roleId)}に${resultLetter(result)}を+1したよ。`);
@@ -751,12 +664,9 @@ function directRecord(roleId, result){
 }
 function resetRole(roleId){
   roleId = safeRole(roleId);
-  if(!isKnownRole(roleId)) { setStatus('リセット対象のロールが不明だよ。'); saveState(); return; }
   const before = {...state.roles[roleId]};
-  const beforeCountLog = cloneCountLog();
   state.roles[roleId] = defaultRoleStats();
-  state.countLog = (Array.isArray(state.countLog) ? state.countLog : []).filter(item => safeRole(item.roleId) !== roleId);
-  state.history.push({type:'role-reset', roleId, before, beforeCountLog, at:Date.now()});
+  state.history.push({type:'role-reset', roleId, before, at:Date.now()});
   state.history = state.history.slice(-300);
   setStatus(`${roleShort(roleId)}だけリセットしたよ。`);
   saveState();
@@ -767,7 +677,6 @@ function undo(){
   if(last.beforeRoles) {
     state.roles = cloneRolesFromSnapshot(last.beforeRoles);
     if(last.beforeAutoLog) state.autoLog = last.beforeAutoLog.map(item => ({...item}));
-    if(last.beforeCountLog) state.countLog = last.beforeCountLog.map(item => ({...item}));
     setStatus('直前の修正を1つ戻したよ。');
     saveState();
     return;
@@ -780,7 +689,6 @@ function undo(){
   }
   if(last.type === 'role-reset' && last.before && state.roles[last.roleId]) {
     state.roles[last.roleId] = {...defaultRoleStats(), ...last.before};
-    if(last.beforeCountLog) state.countLog = last.beforeCountLog.map(item => ({...item}));
     setStatus(`${roleShort(last.roleId)}のリセットを戻したよ。`);
     saveState();
     return;
@@ -794,20 +702,23 @@ function cloneRolesFromSnapshot(snapshot){
   return out;
 }
 function resetAll(){
-  if(!confirm('カウントとカウント履歴を全部リセットする？')) return;
+  if(!confirm('カウントと自動カウント履歴を全部リセットする？')) return;
+  const active = state.activeRole;
   const autoEnabled = state.autoEnabled !== false;
   state = defaultState();
+  state.activeRole = active;
   state.autoEnabled = autoEnabled;
   setStatus('全部リセットしたよ。');
   saveState();
 }
 
-function addCandidate(result, roleId='unknown', source='manual-test', externalId=null){
+function addCandidate(result, roleId=state.activeRole, source='manual-test', externalId=null){
   result = safeResult(result); roleId = safeRole(roleId);
   if(externalId && state.ocrSeen.includes(String(externalId))) return;
   const candidate = {id:state.nextCandidateId++, externalId:externalId ? String(externalId) : null, roleId, result, source, createdAt:Date.now()};
   state.candidates.push(candidate);
   if(externalId) state.ocrSeen = [...state.ocrSeen, String(externalId)].slice(-500);
+  state.activeRole = roleId;
   setStatus(`${roleLabel(roleId)}の${resultLabels[result].candidate}を候補リストに追加したよ。`);
   saveState();
 }
@@ -835,6 +746,7 @@ function changeCandidateRole(id, roleId){
   const c = state.candidates.find(c => Number(c.id) === id);
   if(!c) return;
   c.roleId = roleId;
+  state.activeRole = roleId;
   setStatus(`候補のロールを${roleLabel(roleId)}に変更したよ。`);
   saveState();
 }
@@ -850,46 +762,41 @@ function toggleAutoEnabled(){
   setStatus(state.autoEnabled ? '自動読み取りをONにしたよ。' : '自動読み取りをOFFにしたよ。');
   saveState();
 }
-function editCountLogItem(id, updates={}){
-  const idx = (Array.isArray(state.countLog) ? state.countLog : []).findIndex(item => String(item.id) === String(id));
-  if(idx < 0) { setStatus('そのカウント履歴が見つからなかったよ。'); return; }
+function editAutoLogItem(id, updates={}){
+  const idx = (Array.isArray(state.autoLog) ? state.autoLog : []).findIndex(item => String(item.id) === String(id));
+  if(idx < 0) { setStatus('その自動履歴が見つからなかったよ。'); return; }
   const beforeRoles = cloneRoles();
-  const beforeCountLog = cloneCountLog();
-  const item = state.countLog[idx];
+  const beforeAutoLog = cloneAutoLog();
+  const item = state.autoLog[idx];
   const oldRole = safeRole(item.roleId);
   const oldResult = safeResult(item.result);
   applyContribution(oldRole, oldResult, -1);
-  if(Object.prototype.hasOwnProperty.call(updates, 'roleId')) item.roleId = safeRole(updates.roleId);
-  if(Object.prototype.hasOwnProperty.call(updates, 'result')) item.result = safeResult(updates.result);
+  if(updates.roleId) item.roleId = safeRole(updates.roleId);
+  if(updates.result) item.result = safeResult(updates.result);
   item.editedAt = Date.now();
   applyContribution(item.roleId, item.result, 1);
-  state.history.push({type:'count-log-edit', beforeRoles, beforeCountLog, at:Date.now()});
+  state.history.push({type:'auto-edit', beforeRoles, beforeAutoLog, at:Date.now()});
   state.history = state.history.slice(-300);
-  setStatus(`履歴を ${roleShort(item.roleId)} ${resultLabels[safeResult(item.result)]?.label || '不明'} に修正したよ。`);
+  setStatus(`自動履歴を ${roleShort(item.roleId)} ${resultLetter(item.result)} に修正したよ。`);
   saveState();
 }
-function changeCountLogRole(id, roleId){ editCountLogItem(id, {roleId}); }
-function changeCountLogResult(id, result){ editCountLogItem(id, {result}); }
-function deleteCountLogItem(id){
-  const idx = (Array.isArray(state.countLog) ? state.countLog : []).findIndex(item => String(item.id) === String(id));
-  if(idx < 0) { setStatus('そのカウント履歴が見つからなかったよ。'); return; }
+function changeAutoLogRole(id, roleId){ editAutoLogItem(id, {roleId}); }
+function changeAutoLogResult(id, result){ editAutoLogItem(id, {result}); }
+function deleteAutoLogItem(id){
+  const idx = (Array.isArray(state.autoLog) ? state.autoLog : []).findIndex(item => String(item.id) === String(id));
+  if(idx < 0) { setStatus('その自動履歴が見つからなかったよ。'); return; }
   const beforeRoles = cloneRoles();
-  const beforeCountLog = cloneCountLog();
-  const item = state.countLog[idx];
+  const beforeAutoLog = cloneAutoLog();
+  const item = state.autoLog[idx];
   applyContribution(item.roleId, item.result, -1);
-  state.countLog.splice(idx, 1);
-  state.history.push({type:'count-log-delete', beforeRoles, beforeCountLog, at:Date.now()});
+  state.autoLog.splice(idx, 1);
+  state.history.push({type:'auto-delete', beforeRoles, beforeAutoLog, at:Date.now()});
   state.history = state.history.slice(-300);
-  setStatus('カウント履歴を1件削除したよ。');
+  setStatus('自動履歴を1件削除したよ。');
   saveState();
 }
-function changeAutoLogRole(id, roleId){ changeCountLogRole(id, roleId); }
-function changeAutoLogResult(id, result){ changeCountLogResult(id, result); }
-function deleteAutoLogItem(id){ deleteCountLogItem(id); }
 function autoRecordFromExternal(c){
-  c = c || {};
-  const rawResult = c.result;
-  const externalId = String(c.id || c.externalId || `${rawResult || 'unknown'}-${c.createdAt || Date.now()}`);
+  const externalId = String(c.id || c.externalId || `${c.result}-${c.createdAt || Date.now()}`);
   if(state.ocrSeen.includes(externalId)) return;
   state.ocrSeen = [...state.ocrSeen, externalId].slice(-500);
   if(state.autoEnabled === false) {
@@ -897,19 +804,25 @@ function autoRecordFromExternal(c){
     saveState();
     return;
   }
-  const result = safeResult(rawResult);
-  const roleId = safeRole(c.roleId);
+  const result = safeResult(c.result);
+  const roleId = safeRole(c.roleId || state.activeRole);
   record(roleId, result, {source:'auto', externalId, candidateSource:c.source || 'helper', text:c.text || ''});
-  if(!isKnownRole(roleId) || !isKnownResult(result)) {
-    setStatus('ロールか勝敗が不明なので、未加算の履歴として追加したよ。');
-  } else {
-    const info = resultLabels[result] || resultLabels.unknown;
-    setStatus(`${roleShort(roleId)}に${info.label}を自動カウントしたよ。`);
-  }
+  const info = resultLabels[result] || resultLabels.win;
+  state.autoLog = [{
+    id:`auto-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    roleId,
+    result,
+    source:c.source || 'helper',
+    externalId,
+    text:c.text || '',
+    createdAt:Date.now()
+  }, ...(state.autoLog || [])].slice(0, 40);
+  setStatus(`${roleShort(roleId)}に${info.short}を自動カウントしたよ。`);
   saveState();
 }
 function setActiveRole(roleId){
-  setStatus('ロール固定は使わず、履歴のプルダウンで修正する方式だよ。');
+  state.activeRole = safeRole(roleId);
+  setStatus(`現在ロールを${roleLabel(state.activeRole)}にしたよ。`);
   saveState();
 }
 
@@ -944,20 +857,6 @@ function openView(view){
   const base = `${location.pathname}?view=${view}`;
   location.href = base;
 }
-function requestDockWindowSize(){
-  if(getView() !== 'control') return;
-  try {
-    if(sessionStorage.getItem('owc_dock_size_requested') === '1') return;
-    sessionStorage.setItem('owc_dock_size_requested', '1');
-    if(typeof window.resizeTo === 'function') window.resizeTo(430, 845);
-  } catch(e) {}
-}
-function requestSettingsWindowSize(){
-  if(getView() !== 'designer') return;
-  try {
-    if(typeof window.resizeTo === 'function') window.resizeTo(1060, 760);
-  } catch(e) {}
-}
 async function loadOverlayCustomCss(){
   try {
     const res = await fetch(`${HELPER_BASE}/overlay-css`, {cache:'no-store'});
@@ -974,20 +873,20 @@ function renderOverlay(){
   loadOverlayCustomCss();
 }
 function roleButtonsHTML(){
-  return '';
+  return roles.map(r => `<button class="soft ${state.activeRole===r.id?'active':''}" onclick="OWC.setActiveRole('${r.id}')">${r.short}</button>`).join('');
 }
 function dockSummaryHTML(){
   return `<div class="dock-summary">${roles.map(r => {
     const d = state.roles[r.id] || defaultRoleStats();
-    return `<div class="dock-summary-card"><b>${r.short}</b><span>${Number(d.wins)||0}W</span><span>/</span><span>${Number(d.losses)||0}L</span><span>/</span><span>${Number(d.draws)||0}D</span></div>`;
+    return `<div class="dock-summary-card"><b>${r.short}</b><span>${Number(d.wins)||0}W</span><span>${Number(d.losses)||0}L</span><span>${Number(d.draws)||0}D</span></div>`;
   }).join('')}</div>`;
 }
 function adjustCellHTML(roleId, result, label){
   const cls = resultLabels[result]?.cls || '';
   return `<div class="manual-adjust-cell ${cls}">
-    <span class="pm-label">${label}</span>
-    <button class="pm-btn plus" onclick="OWC.adjustRoleStat('${roleId}','${result}',1)">＋</button>
     <button class="pm-btn minus" onclick="OWC.adjustRoleStat('${roleId}','${result}',-1)">−</button>
+    <span class="pm-label">±${label}</span>
+    <button class="pm-btn plus" onclick="OWC.adjustRoleStat('${roleId}','${result}',1)">＋</button>
   </div>`;
 }
 function directRowsHTML(){
@@ -999,44 +898,39 @@ function directRowsHTML(){
     <button class="role-reset" onclick="OWC.resetRole('${r.id}')">リセット</button>
   </div>`).join('');
 }
-function countLogRowsHTML(){
-  const log = Array.isArray(state.countLog) ? state.countLog : [];
-  if(!log.length) return `<p class="candidate-empty">まだカウント履歴はないよ。</p>`;
-  return log.slice(0, 40).map((item, idx) => {
+function autoLogCardsHTML(){
+  const log = Array.isArray(state.autoLog) ? state.autoLog : [];
+  if(!log.length) return `<p class="candidate-empty">まだ自動カウント履歴はないよ。</p>`;
+  return log.slice(0, 24).map((item, idx) => {
     const result = safeResult(item.result);
-    const source = item.source === 'auto' ? 'auto' : 'manual';
-    const sourceText = source === 'auto' ? '自動' : '手動';
     const time = new Date(item.createdAt || Date.now()).toLocaleTimeString('ja-JP', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
     return `<div class="auto-log-row ${idx===0?'latest':''}">
       <div class="auto-log-time">${time}</div>
-      <div class="count-log-source ${source}" title="${source === 'auto' ? '自動' : '手動'}">${sourceText}</div>
-      <select aria-label="role" onchange="OWC.changeCountLogRole('${item.id}', this.value)">
-        <option value="unknown" ${safeRole(item.roleId)==='unknown'?'selected':''}>不明</option>
+      <select aria-label="role" onchange="OWC.changeAutoLogRole('${item.id}', this.value)">
         ${roles.map(r => `<option value="${r.id}" ${safeRole(item.roleId)===r.id?'selected':''}>${r.short}</option>`).join('')}
       </select>
-      <select aria-label="result" onchange="OWC.changeCountLogResult('${item.id}', this.value)">
-        <option value="unknown" ${result==='unknown'?'selected':''}>不明</option>
-        <option value="win" ${result==='win'?'selected':''}>勝ち</option>
-        <option value="loss" ${result==='loss'?'selected':''}>負け</option>
-        <option value="draw" ${result==='draw'?'selected':''}>ドロー</option>
+      <select aria-label="result" onchange="OWC.changeAutoLogResult('${item.id}', this.value)">
+        <option value="win" ${result==='win'?'selected':''}>W</option>
+        <option value="loss" ${result==='loss'?'selected':''}>L</option>
+        <option value="draw" ${result==='draw'?'selected':''}>D</option>
       </select>
-      <button class="auto-delete" onclick="OWC.deleteCountLogItem('${item.id}')">削除</button>
+      <button class="auto-delete" onclick="OWC.deleteAutoLogItem('${item.id}')">削除</button>
     </div>`;
   }).join('');
 }
-function autoLogCardsHTML(){ return countLogRowsHTML(); }
 function renderControl(){
   const autoOn = state.autoEnabled !== false;
   document.body.className = 'app-view control-view';
-  setTimeout(requestDockWindowSize, 80);
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
       ${dockSummaryHTML()}
     </div>
     <section class="panel auto-panel">
-      <h2><span>🤖 カウント履歴（自動${autoOn ? 'ON' : 'OFF'}）</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
-      <div class="candidate-scroll" id="countLogList">${countLogRowsHTML()}</div>
+      <h2><span>${autoOn ? '🤖 自動カウント中' : '🤖 自動カウント停止中'}</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
+      <div class="helper-mini-status" id="helperMiniStatus">helper: checking... / auto: ${autoOn ? 'ON' : 'OFF'}</div>
+      <div class="auto-history-title">自動カウント履歴</div>
+      <div class="candidate-scroll" id="autoLogList">${autoLogCardsHTML()}</div>
     </section>
     <section class="panel manual-panel">
       <h2>🕹️ 手動カウント</h2>
@@ -1044,6 +938,7 @@ function renderControl(){
     </section>
     <section class="panel">
       <div class="dock-actions">
+        <button class="soft" onclick="OWC.undo()">1つ戻す</button>
         <button class="soft" onclick="OWC.openSettings()">設定</button>
         <button class="soft" onclick="OWC.resetAll()">すべてリセット</button>
       </div>
@@ -1052,87 +947,155 @@ function renderControl(){
   </div>`;
 }
 function renderDesigner(){
-  document.body.className = 'app-view';
-  setTimeout(requestSettingsWindowSize, 80);
-  const defaults = defaultCssVars();
+  document.body.className = 'app-view designer-view';
+  const values = loadDesignValues();
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <div>
-        <h1>🎨 デザインCSSメモ</h1>
-        <p>OBSのカスタムCSSに貼る用。今回からHTML本体側ではCSS変数をJavaScriptで上書きしないから、ここで出したCSSが効きやすいよ。</p>
+        <h1>⚙️ KAWAII OW COUNTER 設定</h1>
+        <p>サイズ系はバーを左右に動かすだけで変更できるよ。プレビューはリアルタイム反映されるよ。</p>
       </div>
-      <button class="soft" onclick="OWC.closeSettingsWindow()">閉じる</button>
+      <button class="soft" onclick="OWC.closeSettings()">閉じる</button>
     </div>
     <section class="panel"><h2>👀 プレビュー</h2><div class="preview-box"><div class="owc-role-list">${counterHTML()}</div></div></section>
-    <section class="panel"><h2>⚙️ CSS生成</h2><div class="designer-grid" id="designerForm"></div><div class="grid3" style="margin-top:10px"><button onclick="OWC.updatePreviewCss()">プレビュー反映</button><button class="soft" onclick="OWC.copyCss()">CSSコピー</button><button class="soft" onclick="OWC.fillDefaultCss()">初期値</button></div><textarea id="cssOutput"></textarea><div class="status" id="status">CSSをコピーしてOBSのカスタムCSSへ貼れるよ。</div></section>
+    <section class="panel"><h2>🎨 見た目調整</h2><div class="designer-grid" id="designerForm"></div><div class="designer-actions"><button class="soft" onclick="OWC.copyCss()">プレビューの内容をCSSとしてコピー</button><button class="soft" onclick="OWC.resetDesignerCss()">リセット</button></div><div class="status" id="status">バーや色を変えると、上のプレビューにすぐ反映されるよ。</div></section>
   </div>`;
-  const fields = [
-    ['--owc-role-color','Tank/Dps/Sup色','color'], ['--owc-win-color','W色','color'], ['--owc-loss-color','L色','color'], ['--owc-draw-color','D色','color'],
-    ['--owc-separator','区切り 例: "💛" "♡" " / "','text'], ['--owc-separator-color','区切り色','color'], ['--owc-row-width','吹き出し位置用の幅','text'], ['--owc-bubble-offset','吹き出しの距離','text'],
-    ['--owc-num-size','数字サイズ','text'], ['--owc-role-size','ロール名サイズ','text'], ['--owc-suffix-size','W/L/Dサイズ','text']
-  ];
-  document.getElementById('designerForm').innerHTML = fields.map(([key,label,type]) => `<div class="field"><label>${label}</label><input data-css-var="${key}" type="${type}" value="${defaults[key] || ''}"></div>`).join('');
-  refreshCssOutput();
+  document.getElementById('designerForm').innerHTML = cssFieldDefs().map(def => designerFieldHTML(def, values)).join('');
+  document.querySelectorAll('[data-css-var]').forEach(input => {
+    input.addEventListener('input', () => updatePreviewCss(true));
+    input.addEventListener('change', () => updatePreviewCss(true));
+  });
+  updatePreviewCss(true);
 }
 function defaultCssVars(){
   return {
     '--owc-role-color':'#b967ff', '--owc-win-color':'#3ad2ee', '--owc-loss-color':'#f54ca7', '--owc-draw-color':'#a7adb7', '--owc-separator':'"💛"', '--owc-separator-color':'#ffd84d', '--owc-row-width':'360px', '--owc-bubble-offset':'4px', '--owc-num-size':'58px', '--owc-role-size':'30px', '--owc-suffix-size':'25px'
   };
 }
-function cssFromForm(){
+function cssFieldDefs(){
+  return [
+    {key:'--owc-role-color', label:'Tank/Dps/Sup色', type:'color'},
+    {key:'--owc-win-color', label:'W色', type:'color'},
+    {key:'--owc-loss-color', label:'L色', type:'color'},
+    {key:'--owc-draw-color', label:'D色', type:'color'},
+    {key:'--owc-separator', label:'区切り 例: "💛" "♡" " / "', type:'text'},
+    {key:'--owc-separator-color', label:'区切り色', type:'color'},
+    {key:'--owc-row-width', label:'全体の横幅', type:'range', min:220, max:720, step:1, unit:'px'},
+    {key:'--owc-bubble-offset', label:'連勝/連敗ふきだし距離', type:'range', min:0, max:120, step:1, unit:'px'},
+    {key:'--owc-num-size', label:'数字サイズ', type:'range', min:24, max:110, step:1, unit:'px'},
+    {key:'--owc-role-size', label:'ロール名サイズ', type:'range', min:14, max:72, step:1, unit:'px'},
+    {key:'--owc-suffix-size', label:'W/L/Dサイズ', type:'range', min:10, max:56, step:1, unit:'px'}
+  ];
+}
+function escAttr(v){ return String(v ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cssNumberValue(value, fallback){
+  const n = parseFloat(String(value || '').replace(/[^\d.\-]/g, ''));
+  return Number.isFinite(n) ? n : fallback;
+}
+function designerFieldHTML(def, values){
+  const current = values[def.key] ?? defaultCssVars()[def.key] ?? '';
+  if(def.type === 'range'){
+    const fallback = cssNumberValue(defaultCssVars()[def.key], def.min || 0);
+    const value = Math.min(Number(def.max), Math.max(Number(def.min), cssNumberValue(current, fallback)));
+    return `<div class="field field-range"><label><span>${escAttr(def.label)}</span><output>${value}${def.unit || ''}</output></label><input data-css-var="${escAttr(def.key)}" data-unit="${escAttr(def.unit || '')}" type="range" min="${def.min}" max="${def.max}" step="${def.step || 1}" value="${value}"></div>`;
+  }
+  return `<div class="field"><label><span>${escAttr(def.label)}</span></label><input data-css-var="${escAttr(def.key)}" type="${escAttr(def.type)}" value="${escAttr(current)}"></div>`;
+}
+function normalizeCssValue(key, value){
+  value = String(value ?? '').trim();
+  if(key === '--owc-separator' && value && !/^['"]/.test(value)) return JSON.stringify(value);
+  return value;
+}
+function currentCssVarsFromForm(){
   const values = {};
-  document.querySelectorAll('[data-css-var]').forEach(input => { values[input.dataset.cssVar] = input.value.trim(); });
+  document.querySelectorAll('[data-css-var]').forEach(input => {
+    const key = input.dataset.cssVar;
+    const unit = input.dataset.unit || '';
+    let value = input.value.trim();
+    if(input.type === 'range') value = `${value}${unit}`;
+    values[key] = normalizeCssValue(key, value);
+  });
+  return {...defaultCssVars(), ...values};
+}
+function loadDesignValues(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_DESIGN) || '{}');
+    return {...defaultCssVars(), ...(raw && typeof raw === 'object' ? raw : {})};
+  } catch(e) { return defaultCssVars(); }
+}
+function saveDesignValues(values){
+  try { localStorage.setItem(STORAGE_DESIGN, JSON.stringify(values)); } catch(e) {}
+}
+function cssFromValues(values){
   return `:root {\n${Object.entries(values).map(([k,v]) => `  ${k}: ${v};`).join('\n')}\n}\n`;
 }
-function refreshCssOutput(){ const t = document.getElementById('cssOutput'); if(t) t.value = cssFromForm(); }
-function updatePreviewCss(){
-  refreshCssOutput();
+function cssFromForm(){ return cssFromValues(currentCssVarsFromForm()); }
+function refreshRangeOutputs(){
+  document.querySelectorAll('[data-css-var][type="range"]').forEach(input => {
+    const out = input.closest('.field')?.querySelector('output');
+    if(out) out.textContent = `${input.value}${input.dataset.unit || ''}`;
+  });
+}
+function refreshCssOutput(){ return cssFromForm(); }
+function updatePreviewCss(silent=false){
+  refreshRangeOutputs();
+  const values = currentCssVarsFromForm();
+  saveDesignValues(values);
   let tag = document.getElementById('designerPreviewCss');
   if(!tag){ tag = document.createElement('style'); tag.id='designerPreviewCss'; document.head.appendChild(tag); }
-  tag.textContent = cssFromForm();
-  setStatus('プレビューに反映したよ。OBSへはCSSコピーして貼ってね。');
+  tag.textContent = cssFromValues(values);
+  if(!silent) setStatus('プレビューに反映したよ。');
 }
-function fillDefaultCss(){ renderDesigner(); }
+function resetDesignerCss(){
+  const defaults = defaultCssVars();
+  document.querySelectorAll('[data-css-var]').forEach(input => {
+    const key = input.dataset.cssVar;
+    const def = cssFieldDefs().find(f => f.key === key);
+    if(input.type === 'range') input.value = cssNumberValue(defaults[key], def?.min || 0);
+    else input.value = defaults[key] || '';
+  });
+  updatePreviewCss(true);
+  setStatus('リセットしたよ。');
+}
+function fillDefaultCss(){ resetDesignerCss(); }
 async function copyCss(){
-  refreshCssOutput();
-  const text = document.getElementById('cssOutput')?.value || '';
-  try { await navigator.clipboard.writeText(text); setStatus('CSSをコピーしたよ。'); }
-  catch(e){ setStatus('自動コピーできなかったかも。テキスト欄から手動コピーしてね。'); }
+  const text = cssFromForm();
+  try { await navigator.clipboard.writeText(text); setStatus('プレビューの内容をCSSとしてコピーしたよ。'); }
+  catch(e){ setStatus('自動コピーできなかったかも。ブラウザの権限を確認してね。'); }
+}
+function closeSettings(){
+  let requestedClose = false;
+  try {
+    if(window.opener && !window.opener.closed) {
+      window.close();
+      requestedClose = true;
+    }
+  } catch(e) {}
+  window.setTimeout(() => {
+    if(!requestedClose || !window.closed) openView('control');
+  }, requestedClose ? 120 : 0);
 }
 async function copyState(){
   try { await navigator.clipboard.writeText(JSON.stringify(state, null, 2)); setStatus('JSONをコピーしたよ。'); }
   catch(e){ setStatus('JSONコピーに失敗したかも。'); }
 }
 function openSettings(){
+  const url = new URL(location.href);
+  url.searchParams.set('view', 'designer');
+  url.hash = '';
   try {
-    const url = new URL(location.href);
-    url.searchParams.set('view', 'designer');
-    url.hash = '';
-    const features = 'popup=yes,width=1060,height=760,left=120,top=80,resizable=yes,scrollbars=yes';
-    const w = window.open(url.toString(), 'OWC_SETTINGS', features);
-    if(w) {
-      try { w.focus(); } catch(e) {}
-      setStatus('設定画面を別ウィンドウで開いたよ。');
-    } else {
-      setStatus('設定画面を開けなかったよ。ポップアップ許可を確認してね。');
-    }
-  } catch(e) {
-    setStatus('設定画面を開けなかったよ。');
-  }
-}
-function closeSettingsWindow(){
-  try {
-    if(window.opener) { window.close(); return; }
+    const w = window.open(url.toString(), 'owcDesignerSettings', 'popup=yes,width=980,height=760');
+    if(w) { w.focus(); return; }
   } catch(e) {}
-  openView('control');
+  location.href = url.toString();
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings, closeSettingsWindow };
-window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || 'unknown', source: source || 'external', id: externalId || `external-${Date.now()}`}); };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, resetDesignerCss, closeSettings, openSettings };
+window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || state.activeRole, source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
-  if(d.type === 'owc-candidate') autoRecordFromExternal({result:d.result, roleId:d.roleId || 'unknown', source:d.source || 'postMessage', id:d.externalId || `post-${Date.now()}`});
+  if(d.type === 'owc-candidate') autoRecordFromExternal({result:d.result, roleId:d.roleId || state.activeRole, source:d.source || 'postMessage', id:d.externalId || `post-${Date.now()}`});
 });
 
 let ocrOfflineNotified = false;
@@ -1166,6 +1129,12 @@ window.addEventListener('storage', ev => {
 window.addEventListener('keydown', ev => {
   if(getView() !== 'control') return;
   const key = ev.key.toLowerCase();
+  if(key === '1') setActiveRole('tank');
+  if(key === '2') setActiveRole('damage');
+  if(key === '3') setActiveRole('support');
+  if(key === 'w') directRecord(state.activeRole, 'win');
+  if(key === 'l') directRecord(state.activeRole, 'loss');
+  if(key === 'd') directRecord(state.activeRole, 'draw');
   if(key === 'u') undo();
 });
 renderAll();
