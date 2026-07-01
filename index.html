@@ -1027,7 +1027,7 @@ function autoRecordFromExternal(c){
   }
   const result = safeResult(rawResult);
   const roleId = safeRole(c.roleId);
-  record(roleId, result, {source:'auto', externalId, candidateSource:c.source || 'helper', text:c.text || ''});
+  record(roleId, result, {source:'auto', externalId, candidateSource:c.source || 'OW勝敗みまもりカメラ', text:c.text || ''});
   if(!isKnownRole(roleId) || !isKnownResult(result)) {
     setStatus('ロールか勝敗が不明なので、未加算の履歴として追加したよ。');
   } else {
@@ -1192,7 +1192,7 @@ function renderAutoSettings(){
       </div>
     </div>
     <div class="auto-settings-frame-wrap">
-      <iframe src="${HELPER_BASE}" title="OCR helper settings"></iframe>
+      <iframe src="${HELPER_BASE}" title="OW勝敗みまもりカメラ設定"></iframe>
     </div>
   </div>`;
 }
@@ -1376,7 +1376,7 @@ async function pollOcrHelper(){
   } catch(e) {
     ocrOfflineNotified = true;
     const mini = document.getElementById('helperMiniStatus');
-    if(mini) mini.textContent = 'helper: offline';
+    if(mini) mini.textContent = 'OW勝敗みまもりカメラ: offline';
   }
 }
 setInterval(pollOcrHelper, 1500);
