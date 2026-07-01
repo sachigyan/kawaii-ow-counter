@@ -314,7 +314,7 @@ body.designer-view .app-wrap { max-width:1080px; }
   border:3px solid var(--owc-role-color);
   box-shadow:0 0 12px rgba(255,255,255,.45);
 }
-.designer-actions { display:grid; grid-template-columns:1.35fr .65fr; gap:10px; margin-top:10px; }
+.designer-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
 .designer-actions button { min-height:44px; }
 code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px 6px; }
 
@@ -379,8 +379,10 @@ body.control-view .dock-summary-card {
   white-space:nowrap;
 }
 body.control-view .dock-summary-card b {
-  color:#c486ff;
+  color:rgba(255,255,255,.92);
   margin-right:1px;
+  font-weight:950;
+  text-shadow:none;
 }
 body.control-view .dock-summary-card span:nth-child(2) { color:#52e7ff; }
 body.control-view .dock-summary-card span:nth-child(3),
@@ -477,7 +479,9 @@ body.control-view .role-title {
   line-height:1;
   letter-spacing:.01em;
   text-align:center;
-  text-shadow:0 0 8px rgba(185,103,255,.85);
+  color:rgba(255,255,255,.92);
+  font-weight:950;
+  text-shadow:none;
 }
 body.control-view .manual-adjust-cell {
   display:grid;
@@ -540,7 +544,7 @@ body.control-view .status {
   overflow:hidden;
   text-overflow:ellipsis;
 }
-body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1.25fr; gap:6px; }
+body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
 body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:6px; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:13px; color:rgba(255,255,255,.66); }
@@ -582,8 +586,12 @@ body.control-view .count-log-source {
   background:rgba(255,255,255,.09);
   color:#fff;
 }
-body.control-view .count-log-source.auto { color:#52e7ff; }
-body.control-view .count-log-source.manual { color:#c486ff; }
+body.control-view .count-log-source.auto,
+body.control-view .count-log-source.manual {
+  color:rgba(255,255,255,.92);
+  background:rgba(255,255,255,.10);
+  text-shadow:none;
+}
 body.control-view .auto-log-row select {
   height:27px;
   min-height:27px;
@@ -599,9 +607,11 @@ body.control-view .auto-log-row .auto-delete {
   border-radius:8px;
 }
 body.control-view .direct-row button.role-reset {
-  background:linear-gradient(135deg,#241b35,#58406f);
-  color:#fff;
-  box-shadow:0 0 10px rgba(185,103,255,.28), inset 0 1px 0 rgba(255,255,255,.12);
+  background:#24243a;
+  color:rgba(255,255,255,.92);
+  box-shadow:none;
+  text-shadow:none;
+  font-weight:950;
 }
 body.control-view .manual-panel { overflow:hidden; }
 
@@ -1124,7 +1134,7 @@ function renderDesigner(){
     <div class="app-head">
       <div>
         <h1>🎨 デザイン設定</h1>
-        <p>サイズはバーを左右に動かすだけで調整できるよ。プレビューはリアルタイム反映、CSS本文は表示しない省スペース版！</p>
+        <p>色やサイズをカスタムしたら、下のボタンからCSSとしてコピーしてね</p>
       </div>
       <button class="soft" onclick="OWC.closeSettingsWindow()">閉じる</button>
     </div>
