@@ -316,6 +316,57 @@ body.designer-view .app-wrap { max-width:1080px; }
 }
 .designer-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
 .designer-actions button { min-height:44px; }
+body.auto-settings-view {
+  height:100vh;
+  overflow:hidden;
+  background:#050509;
+}
+body.auto-settings-view .app-wrap {
+  width:100%;
+  max-width:none;
+  height:100vh;
+  padding:8px;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:8px;
+  overflow:hidden;
+}
+body.auto-settings-view .auto-settings-head {
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+}
+body.auto-settings-view h1 {
+  margin:0;
+  font-size:16px;
+  line-height:1.2;
+}
+body.auto-settings-view .auto-settings-actions {
+  display:grid;
+  grid-template-columns:auto auto;
+  gap:6px;
+}
+body.auto-settings-view .auto-settings-actions button {
+  min-height:34px;
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:13px;
+}
+body.auto-settings-view .auto-settings-frame-wrap {
+  min-height:0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  background:#fff;
+}
+body.auto-settings-view iframe {
+  width:100%;
+  height:100%;
+  border:0;
+  background:#fff;
+}
+
 code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px 6px; }
 
 /* OBS dock compact control view */
@@ -544,7 +595,8 @@ body.control-view .status {
   overflow:hidden;
   text-overflow:ellipsis;
 }
-body.control-view .dock-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+body.control-view .dock-actions { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; }
+body.control-view .dock-actions button { width:100%; min-width:0; }
 body.control-view .auto-panel { min-height:0; overflow:hidden; }
 body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:6px; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:13px; color:rgba(255,255,255,.66); }
@@ -1014,6 +1066,7 @@ function getView(){
   const qs = new URLSearchParams(location.search);
   if(location.hash === '#control') return 'control';
   if(location.hash === '#designer') return 'designer';
+  if(location.hash === '#auto') return 'auto';
   return qs.get('view') || 'overlay';
 }
 function openView(view){
@@ -1120,13 +1173,30 @@ function renderControl(){
     </section>
     <section class="panel">
       <div class="dock-actions">
-        <button class="soft" onclick="OWC.openSettings()">設定</button>
-        <button class="soft" onclick="OWC.resetAll()">すべてリセット</button>
+        <button class="soft" onclick="OWC.openAutoSettings()">自動設定</button>
+        <button class="soft" onclick="OWC.openSettings()">CSS設定</button>
+        <button class="soft" onclick="OWC.resetAll()">カウントをリセット</button>
       </div>
       <div class="status" id="status">${statusText}</div>
     </section>
   </div>`;
 }
+function renderAutoSettings(){
+  document.body.className = 'app-view auto-settings-view';
+  document.body.innerHTML = `<div class="app-wrap">
+    <div class="auto-settings-head">
+      <h1>🤖 自動設定</h1>
+      <div class="auto-settings-actions">
+        <button class="soft" onclick="OWC.openView('control')">戻る</button>
+        <button class="soft" onclick="OWC.openAutoSettingsWindow()">別窓</button>
+      </div>
+    </div>
+    <div class="auto-settings-frame-wrap">
+      <iframe src="${HELPER_BASE}" title="OCR helper settings"></iframe>
+    </div>
+  </div>`;
+}
+
 function renderDesigner(){
   document.body.className = 'app-view designer-view';
   setTimeout(requestSettingsWindowSize, 80);
@@ -1227,6 +1297,25 @@ async function copyState(){
   try { await navigator.clipboard.writeText(JSON.stringify(state, null, 2)); setStatus('JSONをコピーしたよ。'); }
   catch(e){ setStatus('JSONコピーに失敗したかも。'); }
 }
+function openAutoSettings(){
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('view', 'auto');
+    url.hash = '';
+    location.href = url.toString();
+  } catch(e) {
+    openView('auto');
+  }
+}
+function openAutoSettingsWindow(){
+  try {
+    const w = window.open(HELPER_BASE, 'OWC_AUTO_SETTINGS', 'popup=yes,width=900,height=720,left=160,top=90,resizable=yes,scrollbars=yes');
+    if(w) { try { w.focus(); } catch(e) {} }
+    else setStatus('自動設定を別窓で開けなかったよ。');
+  } catch(e) {
+    setStatus('自動設定を別窓で開けなかったよ。');
+  }
+}
 function openSettings(){
   try {
     const url = new URL(location.href);
@@ -1263,9 +1352,9 @@ function closeSettingsWindow(){
     else openView('control');
   }, 180);
 }
-function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else renderOverlay(); }
+function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else if(v==='auto') renderAutoSettings(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, updatePreviewCss, copyCss, fillDefaultCss, openSettings, closeSettingsWindow };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, renderAutoSettings, updatePreviewCss, copyCss, fillDefaultCss, openAutoSettings, openAutoSettingsWindow, openSettings, closeSettingsWindow };
 window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || 'unknown', source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
