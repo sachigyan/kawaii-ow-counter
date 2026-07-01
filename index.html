@@ -722,6 +722,79 @@ body.control-view .direct-row button.role-reset {
 }
 body.control-view .manual-panel { overflow:hidden; }
 
+/* Dock no-resize / narrow-width safety */
+body.control-view,
+body.control-view * {
+  max-width:100%;
+}
+body.control-view {
+  overflow:hidden;
+}
+body.control-view .app-wrap,
+body.control-view .app-head,
+body.control-view .panel,
+body.control-view .auto-panel h2,
+body.control-view .dock-summary-card,
+body.control-view .camera-alert,
+body.control-view .manual-adjust-cell {
+  min-width:0;
+}
+body.control-view h1 {
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+  font-size:clamp(15px, 4.8vw, 21px);
+}
+body.control-view .dock-summary-card {
+  overflow:hidden;
+  font-size:clamp(11px, 3vw, 13px);
+  padding-left:2px;
+  padding-right:2px;
+}
+body.control-view .auto-panel h2 {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,150px);
+  align-items:center;
+}
+body.control-view .auto-panel h2 span {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+body.control-view .auto-toggle {
+  width:100%;
+  min-width:0;
+  font-size:12px;
+}
+body.control-view .camera-alert p {
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+body.control-view .camera-alert-actions button {
+  min-width:0;
+  font-size:11px;
+}
+body.control-view .direct-row {
+  grid-template-columns:42px repeat(3, minmax(0,1fr)) 54px;
+}
+body.control-view .manual-adjust-cell {
+  grid-template-columns:minmax(22px,1fr) 22px 22px;
+}
+body.control-view .manual-adjust-cell .pm-btn {
+  width:22px;
+  min-width:22px;
+}
+body.control-view .direct-row button.role-reset {
+  min-width:0;
+  font-size:12px;
+}
+body.control-view .dock-actions button {
+  min-width:0;
+  font-size:12px;
+}
+
 
 @media (max-width: 620px) {
   .app-wrap { padding:10px; }
@@ -1242,12 +1315,8 @@ function openView(view){
   location.href = base;
 }
 function requestDockWindowSize(){
-  if(getView() !== 'control') return;
-  try {
-    if(sessionStorage.getItem('owc_dock_size_requested') === '1') return;
-    sessionStorage.setItem('owc_dock_size_requested', '1');
-    if(typeof window.resizeTo === 'function') window.resizeTo(430, 845);
-  } catch(e) {}
+  // OBSドック側のウィンドウサイズはユーザー設定を尊重する。
+  // ここでは resizeTo しない。
 }
 function requestSettingsWindowSize(){
   if(getView() !== 'designer') return;
@@ -1325,7 +1394,6 @@ function autoLogCardsHTML(){ return countLogRowsHTML(); }
 function renderControl(){
   const autoOn = state.autoEnabled !== false;
   document.body.className = 'app-view control-view';
-  setTimeout(requestDockWindowSize, 80);
   document.body.innerHTML = `<div class="app-wrap">
     <div class="app-head">
       <h1>KAWAII OW COUNTER</h1>
