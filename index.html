@@ -366,6 +366,18 @@ body.auto-settings-view iframe {
   border:0;
   background:#fff;
 }
+body.auto-settings-view .camera-alert {
+  align-self:start;
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border-radius:16px;
+  background:#151522;
+  border:1px solid rgba(255,216,77,.34);
+}
+body.auto-settings-view .camera-alert h3 { font-size:16px; }
+body.auto-settings-view .camera-alert p { font-size:14px; }
+body.auto-settings-view .camera-alert-actions button { min-height:36px; height:36px; }
 
 code { background:rgba(0,0,0,.32); color:#fff063; border-radius:7px; padding:2px 6px; }
 
@@ -601,6 +613,49 @@ body.control-view .auto-panel { min-height:0; overflow:hidden; }
 body.control-view .auto-panel h2 { display:flex; justify-content:space-between; align-items:center; gap:6px; }
 body.control-view .candidate-empty { margin:4px 0 0; font-size:13px; color:rgba(255,255,255,.66); }
 body.control-view .helper-mini-status { display:none; }
+body.control-view .camera-alert {
+  display:grid;
+  gap:5px;
+  margin:4px 0 5px;
+  padding:7px;
+  border-radius:12px;
+  background:rgba(255,216,77,.10);
+  border:1px solid rgba(255,216,77,.36);
+  color:rgba(255,255,255,.94);
+  font-size:13px;
+}
+body.control-view .camera-alert[hidden],
+body.auto-settings-view .camera-alert[hidden],
+body.auto-settings-view .auto-settings-frame-wrap[hidden] { display:none !important; }
+body.control-view .camera-alert h3,
+body.auto-settings-view .camera-alert h3 {
+  margin:0;
+  font-size:13px;
+  line-height:1.25;
+  color:#fff;
+}
+body.control-view .camera-alert p,
+body.auto-settings-view .camera-alert p {
+  display:block;
+  margin:0;
+  font-size:13px;
+  line-height:1.35;
+  color:rgba(255,255,255,.82);
+}
+body.control-view .camera-alert-actions,
+body.auto-settings-view .camera-alert-actions {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px;
+}
+body.control-view .camera-alert-actions button,
+body.auto-settings-view .camera-alert-actions button {
+  min-height:30px;
+  height:30px;
+  padding:4px 5px;
+  font-size:12px;
+  border-radius:9px;
+}
 
 body.control-view .auto-toggle { min-width:154px; min-height:31px; height:31px; padding:5px 8px; font-size:13px; white-space:normal; }
 body.control-view .auto-history-title { display:none; }
@@ -973,10 +1028,123 @@ function clearCandidates(){
   setStatus('未確定候補をすべて破棄したよ。');
   saveState();
 }
-function toggleAutoEnabled(){
+let cameraOnline = null;
+let cameraLastError = '';
+let cameraCheckInFlight = false;
+let lastCameraCheckAt = 0;
+const CAMERA_NAME = 'OW勝敗みまもりカメラ';
+const CAMERA_CMD_NAME = 'OW勝敗みまもりカメラ.cmd';
+
+async function toggleAutoEnabled(){
+  const willEnable = state.autoEnabled === false;
+  if(willEnable) {
+    const ok = await checkMimamoriCamera('auto-toggle', {showOffline:true, force:true});
+    if(!ok) {
+      state.autoEnabled = false;
+      setStatus(`${CAMERA_NAME}が起動していないので、自動読み取りはONにしなかったよ。`);
+      saveState();
+      return;
+    }
+  }
   state.autoEnabled = state.autoEnabled === false;
   setStatus(state.autoEnabled ? '自動読み取りをONにしたよ。' : '自動読み取りをOFFにしたよ。');
   saveState();
+}
+function helperFetch(url, options={}){
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), options.timeout || 1200) : null;
+  const fetchOptions = {...options, cache:'no-store'};
+  if(controller) fetchOptions.signal = controller.signal;
+  delete fetchOptions.timeout;
+  return fetch(url, fetchOptions).finally(() => { if(timer) clearTimeout(timer); });
+}
+async function checkMimamoriCamera(reason='manual', options={}){
+  const now = Date.now();
+  const force = !!options.force;
+  if(cameraCheckInFlight) return cameraOnline === true;
+  if(!force && now - lastCameraCheckAt < 2500) {
+    updateCameraStatusUi(reason);
+    return cameraOnline === true;
+  }
+  lastCameraCheckAt = now;
+  cameraCheckInFlight = true;
+  updateCameraStatusUi(reason, true);
+  try {
+    const res = await helperFetch(`${HELPER_BASE}/status`, {timeout:1300});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    await res.json();
+    cameraOnline = true;
+    cameraLastError = '';
+    updateCameraStatusUi(reason);
+    return true;
+  } catch(e) {
+    cameraOnline = false;
+    cameraLastError = e && e.name === 'AbortError' ? 'timeout' : (e && e.message ? e.message : 'offline');
+    if(options.showOffline !== false) {
+      setStatus(`${CAMERA_NAME}が起動していないみたい。${CAMERA_CMD_NAME}を起動してから再確認してね。`);
+    }
+    updateCameraStatusUi(reason);
+    return false;
+  } finally {
+    cameraCheckInFlight = false;
+  }
+}
+function maybeCheckMimamoriCamera(reason='auto'){
+  if(getView() !== 'control' && getView() !== 'auto') return;
+  checkMimamoriCamera(reason, {showOffline: reason !== 'poll', force:false});
+}
+function cameraGuideHTML(compact=false){
+  const lead = compact ? `${CAMERA_NAME}が未起動です` : `${CAMERA_NAME}が起動していません`;
+  return `<h3>📷 ${lead}</h3>
+    <p>${CAMERA_CMD_NAME} を起動してから「再確認」を押してね。GitHub上の index.html からはPC内の保存フォルダを自動特定できない場合があるよ。</p>
+    <div class="camera-alert-actions">
+      <button class="soft" onclick="OWC.recheckCamera()">再確認</button>
+      <button class="soft" onclick="OWC.copyCameraCommandName()">名前をコピー</button>
+      <button class="soft" onclick="OWC.openLocalPackageFolder()">フォルダ</button>
+    </div>`;
+}
+function updateCameraStatusUi(reason='', checking=false){
+  const controlPanel = document.getElementById('cameraStatusPanel');
+  if(controlPanel) {
+    controlPanel.hidden = cameraOnline !== false && !checking;
+    if(checking && cameraOnline !== false) {
+      controlPanel.innerHTML = `<h3>📷 ${CAMERA_NAME}を確認中...</h3>`;
+    } else if(cameraOnline === false) {
+      controlPanel.innerHTML = cameraGuideHTML(true);
+    }
+  }
+  const autoGuide = document.getElementById('autoCameraGuide');
+  const frameWrap = document.getElementById('autoSettingsFrameWrap');
+  const iframe = document.getElementById('autoSettingsFrame');
+  if(autoGuide || frameWrap) {
+    if(cameraOnline === true) {
+      if(autoGuide) autoGuide.hidden = true;
+      if(frameWrap) frameWrap.hidden = false;
+      if(iframe && !iframe.src) iframe.src = HELPER_BASE;
+    } else {
+      if(frameWrap) frameWrap.hidden = true;
+      if(autoGuide) {
+        autoGuide.hidden = false;
+        autoGuide.innerHTML = checking ? `<h3>📷 ${CAMERA_NAME}を確認中...</h3>` : cameraGuideHTML(false);
+      }
+    }
+  }
+}
+function recheckCamera(){ return checkMimamoriCamera('manual-recheck', {showOffline:true, force:true}); }
+async function copyCameraCommandName(){
+  try { await navigator.clipboard.writeText(CAMERA_CMD_NAME); setStatus(`${CAMERA_CMD_NAME} をコピーしたよ。`); }
+  catch(e){ setStatus(`コピーできなかったかも。起動ファイル名は ${CAMERA_CMD_NAME} だよ。`); }
+}
+function openLocalPackageFolder(){
+  try {
+    if(location.protocol === 'file:') {
+      const folderUrl = new URL('.', location.href).toString();
+      const w = window.open(folderUrl, 'OWC_LOCAL_FOLDER');
+      if(w) { setStatus('このHTMLがあるフォルダを開いたよ。'); return; }
+    }
+  } catch(e) {}
+  setStatus('GitHub版やOBS環境ではフォルダを直接開けないことがあるよ。起動ファイル名をコピーして探してね。');
+  copyCameraCommandName();
 }
 function editCountLogItem(id, updates={}){
   const idx = (Array.isArray(state.countLog) ? state.countLog : []).findIndex(item => String(item.id) === String(id));
@@ -1165,6 +1333,7 @@ function renderControl(){
     </div>
     <section class="panel auto-panel">
       <h2><span>🤖 カウント履歴（自動${autoOn ? 'ON' : 'OFF'}）</span><button class="auto-toggle soft" onclick="OWC.toggleAutoEnabled()">${autoOn ? '自動読み取りをOFFにする' : '自動読み取りをONにする'}</button></h2>
+      <div class="camera-alert" id="cameraStatusPanel" hidden></div>
       <div class="candidate-scroll" id="countLogList">${countLogRowsHTML()}</div>
     </section>
     <section class="panel manual-panel">
@@ -1180,6 +1349,7 @@ function renderControl(){
       <div class="status" id="status">${statusText}</div>
     </section>
   </div>`;
+  setTimeout(() => maybeCheckMimamoriCamera('dock-open'), 160);
 }
 function renderAutoSettings(){
   document.body.className = 'app-view auto-settings-view';
@@ -1191,10 +1361,12 @@ function renderAutoSettings(){
         <button class="soft" onclick="OWC.openAutoSettingsWindow()">別窓で開く</button>
       </div>
     </div>
-    <div class="auto-settings-frame-wrap">
-      <iframe src="${HELPER_BASE}" title="OW勝敗みまもりカメラ設定"></iframe>
+    <div class="camera-alert" id="autoCameraGuide"><h3>📷 OW勝敗みまもりカメラを確認中...</h3></div>
+    <div class="auto-settings-frame-wrap" id="autoSettingsFrameWrap" hidden>
+      <iframe id="autoSettingsFrame" title="OW勝敗みまもりカメラ設定"></iframe>
     </div>
   </div>`;
+  setTimeout(() => checkMimamoriCamera('auto-settings', {showOffline:true, force:true}), 120);
 }
 
 function renderDesigner(){
@@ -1354,7 +1526,7 @@ function closeSettingsWindow(){
 }
 function renderAll(){ const v=getView(); if(v==='control') renderControl(); else if(v==='designer') renderDesigner(); else if(v==='auto') renderAutoSettings(); else renderOverlay(); }
 
-window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, renderAutoSettings, updatePreviewCss, copyCss, fillDefaultCss, openAutoSettings, openAutoSettingsWindow, openSettings, closeSettingsWindow };
+window.OWC = { addCandidate, confirmCandidate, discardCandidate, changeCandidateRole, clearCandidates, directRecord, adjustRoleStat, resetRole, undo, resetAll, setActiveRole, toggleAutoEnabled, autoRecordFromExternal, changeCountLogRole, changeCountLogResult, deleteCountLogItem, changeAutoLogRole, changeAutoLogResult, deleteAutoLogItem, openView, renderControl, copyState, renderDesigner, renderAutoSettings, updatePreviewCss, copyCss, fillDefaultCss, openAutoSettings, openAutoSettingsWindow, openSettings, closeSettingsWindow, recheckCamera, copyCameraCommandName, openLocalPackageFolder, checkMimamoriCamera };
 window.addOwCandidate = function(result, roleId, source, externalId){ autoRecordFromExternal({result, roleId: roleId || 'unknown', source: source || 'external', id: externalId || `external-${Date.now()}`}); };
 window.addEventListener('message', ev => {
   const d = ev.data || {};
@@ -1365,9 +1537,12 @@ let ocrOfflineNotified = false;
 async function pollOcrHelper(){
   if(getView() !== 'control') return;
   try {
-    const res = await fetch(`${HELPER_BASE}/candidates`, {cache:'no-store'});
-    if(!res.ok) return;
+    const res = await helperFetch(`${HELPER_BASE}/candidates`, {timeout:1300});
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    cameraOnline = true;
+    cameraLastError = '';
+    updateCameraStatusUi('poll');
     const list = Array.isArray(data.candidates) ? data.candidates : [];
     list.forEach(c => autoRecordFromExternal(c));
     const mini = document.getElementById('helperMiniStatus');
@@ -1375,11 +1550,16 @@ async function pollOcrHelper(){
     if(list.length && ocrOfflineNotified) ocrOfflineNotified = false;
   } catch(e) {
     ocrOfflineNotified = true;
+    cameraOnline = false;
+    cameraLastError = e && e.name === 'AbortError' ? 'timeout' : (e && e.message ? e.message : 'offline');
+    updateCameraStatusUi('poll');
     const mini = document.getElementById('helperMiniStatus');
-    if(mini) mini.textContent = 'helper: offline';
+    if(mini) mini.textContent = `${CAMERA_NAME}: offline`;
   }
 }
 setInterval(pollOcrHelper, 1500);
+window.addEventListener('focus', () => maybeCheckMimamoriCamera('focus'));
+document.addEventListener('visibilitychange', () => { if(!document.hidden) maybeCheckMimamoriCamera('visibility'); });
 
 if(channel){
   channel.onmessage = ev => {
